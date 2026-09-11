@@ -34,6 +34,7 @@ import (
 
     В игре собирается и отображается в отдельном представлении статистика всех прохождений, отсортированная по количеству набранных сокровищ: количество сокровищ, достигнутый уровень, количество побежденных противников, количество съеденной еды, количество выпитых эликсиров, количество прочитанных свитков, количество нанесенных и пропущенных ударов, количество пройденных клеток.
 */
+var txt int
 
 func DrawString(screen tcell.Screen, x, y int, msg string) {
 	for i, char := range msg {
@@ -78,7 +79,7 @@ func RunView() {
 				screen.SetContent(i, j, mapp[i][j], nil, tcell.StyleDefault)
 			}
 		}
-		txt := 0
+		txt = 0
 		DrawString(
 			screen,
 			3,
@@ -91,43 +92,47 @@ func RunView() {
 		playerMoved := false
 		event := screen.PollEvent()
 
-		switch event := event.(type) {
-		case *tcell.EventKey:
-			switch event.Rune() {
-			case 'q':
-				isRun = false
-			case 'w':
-				if CheckRoof(-1, mapp, player) {
-					player.Y -= 1
-					playerMoved = true
-				} else {
-					break
-				}
-			case 'a':
-				if CheckWall(-1, mapp, player) {
-					player.X -= 1
-					playerMoved = true
-				} else {
-					break
-				}
-			case 's':
-				if CheckRoof(1, mapp, player) {
-					player.Y += 1
-					playerMoved = true
-				} else {
-					break
-				}
-			case 'd':
-				if CheckWall(1, mapp, player) {
-					player.X += 1
-					playerMoved = true
-				} else {
-					break
-				}
+		checkInput(&event, &isRun, &playerMoved, player, &mapp)
+	}
+}
+
+func checkInput(ev *tcell.Event, isRun, playerMoved *bool, player *Sprite, mapp *[100][40]rune) {
+	switch event := (*ev).(type) {
+	case *tcell.EventKey:
+		switch event.Rune() {
+		case 'q':
+			*isRun = false
+		case 'w':
+			if CheckRoof(-1, *mapp, player) {
+				player.Y -= 1
+				*playerMoved = true
+			} else {
+				break
+			}
+		case 'a':
+			if CheckWall(-1, *mapp, player) {
+				player.X -= 1
+				*playerMoved = true
+			} else {
+				break
+			}
+		case 's':
+			if CheckRoof(1, *mapp, player) {
+				player.Y += 1
+				*playerMoved = true
+			} else {
+				break
+			}
+		case 'd':
+			if CheckWall(1, *mapp, player) {
+				player.X += 1
+				*playerMoved = true
+			} else {
+				break
 			}
 		}
-		if playerMoved {
-			txt++
-		}
+	}
+	if *playerMoved {
+		txt++
 	}
 }

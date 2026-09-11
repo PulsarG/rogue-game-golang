@@ -10,28 +10,80 @@ import "math/rand"
   Пример реализации генерации уровней представлен в папке code-samples.
 */
 
+var minWidth, maxWidth = 10, 20
+var minHeigth, maxHeigth = 4, 7
+
 func GenMap() [100][40]rune {
 	mapp := [100][40]rune{}
-	minDlina, maxDlina := 10, 20
-	minVysota, maxVysota := 4, 7
-	otstupDlinySleva := 3
-	dlinaRoom := minDlina + rand.Intn(maxDlina-minDlina+1)
-	startVerha := 3
-	vysotaRoom := minVysota + rand.Intn(maxVysota-minVysota+1)
-	startNiza := startVerha + vysotaRoom
 
-	for i := otstupDlinySleva; i < otstupDlinySleva+dlinaRoom; i++ {
-		mapp[i][startVerha] = '-'
-		mapp[i][startNiza] = '-'
+	startPointFromX := 3 // для каждой комнаты, рандомить
+	startPointFromY := 3 // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY := setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+
+	startPointFromX = 33 // для каждой комнаты, рандомить
+	startPointFromY = 3  // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+
+	startPointFromX = 66 // для каждой комнаты, рандомить
+	startPointFromY = 3  // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+	startPointFromX = 3  // для каждой комнаты, рандомить
+	startPointFromY = 13 // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+	startPointFromX = 33 // для каждой комнаты, рандомить
+	startPointFromY = 13 // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+	startPointFromX = 66 // для каждой комнаты, рандомить
+	startPointFromY = 13 // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+	startPointFromX = 3  // для каждой комнаты, рандомить
+	startPointFromY = 23 // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+	startPointFromX = 33 // для каждой комнаты, рандомить
+	startPointFromY = 23 // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+	startPointFromX = 66 // для каждой комнаты, рандомить
+	startPointFromY = 23 // для каждой комнаты, рандомить
+	widthRoom, heigthRoom, endPointFromY = setSize(&startPointFromY)
+	genRoom(&startPointFromX, &startPointFromY, &endPointFromY, &widthRoom, &heigthRoom, &mapp)
+	return mapp
+}
+
+func setSize(startPointFromY *int) (int, int, int) {
+	widthRoom := minWidth + rand.Intn(maxWidth-minWidth+1)
+	heigthRoom := minHeigth + rand.Intn(maxHeigth-minHeigth+1)
+	endPointFromY := *startPointFromY + heigthRoom
+	return widthRoom, heigthRoom, endPointFromY
+}
+
+func genRoom(
+	startPointFromX *int,
+	startPointFromY *int,
+	endPointFromY *int,
+	widthRoom *int,
+	heigthRoom *int,
+	mapp *[100][40]rune,
+) {
+	for i := *startPointFromX; i < *startPointFromX+*widthRoom; i++ {
+		mapp[i][*startPointFromY] = '-'
+		mapp[i][*endPointFromY] = '-'
 	}
-	for i := startVerha; i < startNiza+1; i++ {
-		mapp[otstupDlinySleva][i] = '|'
-		mapp[dlinaRoom+otstupDlinySleva][i] = '|'
+	for i := *startPointFromY; i < *endPointFromY+1; i++ {
+		mapp[*startPointFromX][i] = '|'
+		mapp[*widthRoom+*startPointFromX][i] = '|'
 	}
-	for i := otstupDlinySleva + 1; i < otstupDlinySleva+dlinaRoom; i++ {
-		for j := startVerha + 1; j < startNiza; j++ {
+	for i := *startPointFromX + 1; i < *startPointFromX+*widthRoom; i++ {
+		for j := *startPointFromY + 1; j < *endPointFromY; j++ {
 			mapp[i][j] = '.'
 		}
 	}
-	return mapp
+
 }
