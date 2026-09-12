@@ -16,34 +16,34 @@ var mapp = [100][40]rune{}
 
 func GenMap() [100][40]rune {
 
-	startPointFromX := 3 + rand.Intn(8) // для каждой комнаты, рандомить
-	startPointFromY := 3 + rand.Intn(5) // для каждой комнаты, рандомить
+	startPointFromX := 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY := 1 + rand.Intn(5)  // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
 
-	startPointFromX = 33 + rand.Intn(33) // для каждой комнаты, рандомить
-	startPointFromY = 3 + rand.Intn(5)   // для каждой комнаты, рандомить
+	startPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
-	startPointFromX = 66 + rand.Intn(13) // для каждой комнаты, рандомить
-	startPointFromY = 3 + rand.Intn(5)   // для каждой комнаты, рандомить
+	startPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
 
-	startPointFromX = 3 + rand.Intn(8)   // для каждой комнаты, рандомить
-	startPointFromY = 13 + rand.Intn(10) // для каждой комнаты, рандомить
+	startPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 13 + rand.Intn(5) // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
-	startPointFromX = 33 + rand.Intn(33) // для каждой комнаты, рандомить
-	startPointFromY = 13 + rand.Intn(10) // для каждой комнаты, рандомить
+	startPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
-	startPointFromX = 66 + rand.Intn(13) // для каждой комнаты, рандомить
-	startPointFromY = 13 + rand.Intn(10) // для каждой комнаты, рандомить
+	startPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
-	startPointFromX = 3 + rand.Intn(8)  // для каждой комнаты, рандомить
-	startPointFromY = 23 + rand.Intn(9) // для каждой комнаты, рандомить
+	startPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 26 + rand.Intn(5) // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
-	startPointFromX = 33 + rand.Intn(33) // для каждой комнаты, рандомить
-	startPointFromY = 23 + rand.Intn(9)  // для каждой комнаты, рандомить
+	startPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
-	startPointFromX = 66 + rand.Intn(13) // для каждой комнаты, рандомить
-	startPointFromY = 23 + rand.Intn(9)  // для каждой комнаты, рандомить
+	startPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	startPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
 	createRoom(&startPointFromX, &startPointFromY)
 
 	return mapp
