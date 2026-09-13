@@ -121,7 +121,7 @@ func DrawString(screen tcell.Screen, x, y int, msg string) {
 }
 
 func CheckRoof(vector int, mapp [100][40]rune, player *Sprite) bool {
-	if mapp[player.X][player.Y+vector] != '.' {
+	if mapp[player.X][player.Y+vector] != '.' && mapp[player.X][player.Y+vector] != '#' {
 		return false
 	} else {
 		return true
@@ -129,7 +129,7 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Sprite) bool {
 }
 
 func CheckWall(vector int, mapp [100][40]rune, player *Sprite) bool {
-	if mapp[player.X+vector][player.Y] != '.' {
+	if mapp[player.X+vector][player.Y] != '.' && mapp[player.X+vector][player.Y] != '#' {
 		return false
 	} else {
 		return true

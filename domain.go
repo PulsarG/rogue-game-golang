@@ -12,14 +12,24 @@ type Level struct {
 }
 
 //Комната;
-type Room struct {
-	IsStart     bool
-	IsEnd       bool
-	Height      int
-	Width       int
-	Enemies     int
-	Door        int
-	Coordinates interface{}
+type RoomM struct {
+	IsStart, IsEnd   bool
+	Width, Heigth    int
+	Enemies          int
+	Door             int
+	StartX, StartY   int
+	CenterX, CenterY int
+}
+
+func NewRoom(startX, startY, width, heigth int) *RoomM {
+	return &RoomM{
+		StartX:  startX,
+		StartY:  startY,
+		Width:   width,
+		Heigth:  heigth,
+		CenterX: startX + width/2,
+		CenterY: startY + heigth/2,
+	}
 }
 
 //Коридор;
