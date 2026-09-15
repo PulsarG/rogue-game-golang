@@ -14,61 +14,54 @@ var minWidth, maxWidth = 10, 20
 var minHeigth, maxHeigth = 4, 7
 var mapp = [100][40]rune{}
 
-type Room struct {
+/*type Room struct {
 	StartPointFromX, StartPointFromY, EndPointFromY, Width, Heigth, CenterX, CenterY int
-}
+}*/
 
-func GenMap() [100][40]rune {
+func GenMap() ([100][40]rune, [9]Room) {
 
-	rooms := [9]Room{}
+	Rooms := [9]Room{}
+	Rooms[0].IsStart = true
 	//r1 := Room{}
-	rooms[0].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
-	rooms[0].StartPointFromY = 1 + rand.Intn(5)  // для каждой комнаты, рандомить
-	rooms[0].CreateRoom()
+	Rooms[0].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[0].StartPointFromY = 1 + rand.Intn(5)  // для каждой комнаты, рандомить
+	Rooms[0].CreateRoom()
 
-	//r2 := Room{}
-	rooms[1].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
-	rooms[1].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
-	rooms[1].CreateRoom()
+	Rooms[1].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[1].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
+	Rooms[1].CreateRoom()
 
-	r3 := Room{}
-	r3.StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
-	r3.StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
-	r3.CreateRoom()
+	Rooms[2].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[2].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
+	Rooms[2].CreateRoom()
 
-	r4 := Room{}
-	r4.StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
-	r4.StartPointFromY = 13 + rand.Intn(5) // для каждой комнаты, рандомить
-	r4.CreateRoom()
+	Rooms[3].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[3].StartPointFromY = 13 + rand.Intn(5) // для каждой комнаты, рандомить
+	Rooms[3].CreateRoom()
 
-	r5 := Room{}
-	r5.StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
-	r5.StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
-	r5.CreateRoom()
+	Rooms[4].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[4].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
+	Rooms[4].CreateRoom()
 
-	r6 := Room{}
-	r6.StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
-	r6.StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
-	r6.CreateRoom()
+	Rooms[5].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[5].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
+	Rooms[5].CreateRoom()
 
-	r7 := Room{}
-	r7.StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
-	r7.StartPointFromY = 26 + rand.Intn(5) // для каждой комнаты, рандомить
-	r7.CreateRoom()
+	Rooms[6].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[6].StartPointFromY = 26 + rand.Intn(5) // для каждой комнаты, рандомить
+	Rooms[6].CreateRoom()
 
-	r8 := Room{}
-	r8.StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
-	r8.StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
-	r8.CreateRoom()
+	Rooms[7].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[7].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
+	Rooms[7].CreateRoom()
 
-	r9 := Room{}
-	r9.StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
-	r9.StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
-	r9.CreateRoom()
+	Rooms[8].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	Rooms[8].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
+	Rooms[8].CreateRoom()
 
-	connectRoom(&mapp, &rooms)
+	connectRoom(&mapp, &Rooms)
 
-	return mapp
+	return mapp, Rooms
 }
 
 func (r *Room) CreateRoom() {
@@ -111,6 +104,13 @@ func connectRoom(mapp *[100][40]rune, r *[9]Room) {
 		applyVerTunel(mapp, r[0].CenterY, r[1].CenterY, r[0].CenterX)
 		applyHorTunel(mapp, r[0].CenterX, r[1].CenterX, r[1].CenterY)
 	}
+	if rand.Intn(2) == 0 {
+		applyHorTunel(mapp, r[1].CenterX, r[2].CenterX, r[1].CenterY)
+		applyVerTunel(mapp, r[1].CenterY, r[2].CenterY, r[2].CenterX)
+	} else {
+		applyVerTunel(mapp, r[1].CenterY, r[2].CenterY, r[1].CenterX)
+		applyHorTunel(mapp, r[1].CenterX, r[2].CenterX, r[2].CenterY)
+	}
 }
 
 func applyHorTunel(mapp *[100][40]rune, x1, x2, y int) {
@@ -119,8 +119,10 @@ func applyHorTunel(mapp *[100][40]rune, x1, x2, y int) {
 		minX, maxX = x2, x1
 	}
 	for x := minX; x <= maxX; x++ {
-		if mapp[x][y] == 0 || mapp[x][y] == '|' {
+		if mapp[x][y] == 0 {
 			mapp[x][y] = '#'
+		} else if mapp[x][y] == '|' {
+			mapp[x][y] = '+'
 		}
 	}
 }
@@ -131,6 +133,10 @@ func applyVerTunel(mapp *[100][40]rune, y1, y2, x int) {
 		minY, maxY = y2, y1
 	}
 	for y := minY; y <= maxY; y++ {
-		mapp[x][y] = '.'
+		if mapp[x][y] == 0 {
+			mapp[x][y] = '#'
+		} else if mapp[x][y] == '|' {
+			mapp[x][y] = '+'
+		}
 	}
 }

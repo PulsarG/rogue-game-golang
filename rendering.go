@@ -25,7 +25,7 @@ import (
 */
 var txt int
 
-func RunView() {
+func RunView(s *Session) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatal(err)
@@ -35,8 +35,11 @@ func RunView() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	player := NewSprite('@', 5, 5)
-	mapp := GenMap()
+
+	//player := NewSprite('@', 5, 5)
+	mapp := s.Mapp
+	player := s.Player
+
 	isRun := true
 	isMenuOpen := false
 	for isRun {
@@ -53,7 +56,7 @@ func RunView() {
 	}
 }
 
-func runGame(screen tcell.Screen, player *Sprite, mapp *[100][40]rune) {
+func runGame(screen tcell.Screen, player *Player, mapp *[100][40]rune) {
 
 	for i := range 100 {
 		for j := range 40 {
@@ -67,14 +70,14 @@ func runGame(screen tcell.Screen, player *Sprite, mapp *[100][40]rune) {
 		42,
 		fmt.Sprint("Message: ", txt),
 	)
-	player.Draw(screen)
+	Draw(player, screen)
 }
 
 func openMenu(screen tcell.Screen) {
 	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", txt))
 }
 
-func checkInput(screen tcell.Screen, ev *tcell.Event, isRun *bool, isMenuOpen *bool, player *Sprite, mapp *[100][40]rune) {
+func checkInput(screen tcell.Screen, ev *tcell.Event, isRun *bool, isMenuOpen *bool, player *Player, mapp *[100][40]rune) {
 	playerMoved := false
 	switch event := (*ev).(type) {
 	case *tcell.EventKey:
@@ -120,18 +123,40 @@ func DrawString(screen tcell.Screen, x, y int, msg string) {
 	}
 }
 
-func CheckRoof(vector int, mapp [100][40]rune, player *Sprite) bool {
-	if mapp[player.X][player.Y+vector] != '.' && mapp[player.X][player.Y+vector] != '#' {
-		return false
-	} else {
+func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
+	switch mapp[player.X][player.Y+vector] {
+	case '.':
 		return true
+	case '#':
+		return true
+	case '+':
+		return true
+	default:
+		return false
+		/*
+			if mapp[player.X][player.Y+vector] != '.' && mapp[player.X][player.Y+vector] != '#' && mapp[player.X][player.Y+vector] != '+' {
+				return false
+			} else {
+				return true
+			}
+		*/
 	}
 }
 
-func CheckWall(vector int, mapp [100][40]rune, player *Sprite) bool {
-	if mapp[player.X+vector][player.Y] != '.' && mapp[player.X+vector][player.Y] != '#' {
-		return false
-	} else {
+func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
+	switch mapp[player.X+vector][player.Y] {
+	case '.':
 		return true
+	case '#':
+		return true
+	case '+':
+		return true
+	default:
+		return false
+		/*if mapp[player.X+vector][player.Y] != '.' && mapp[player.X+vector][player.Y] != '#' && mapp[player.X][player.Y+vector] != '+' {
+			return false
+		} else {
+			return true
+		}*/
 	}
 }

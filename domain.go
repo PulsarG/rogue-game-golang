@@ -3,6 +3,9 @@ package main
 //Игровая сессия;
 type Session struct {
 	CurrentLvl int
+	Mapp       [100][40]rune
+	Player     *Player
+	Rooms      [9]Room
 	// возможно данные для статистики
 }
 
@@ -12,23 +15,23 @@ type Level struct {
 }
 
 //Комната;
-type RoomM struct {
-	IsStart, IsEnd   bool
-	Width, Heigth    int
-	Enemies          int
-	Door             int
-	StartX, StartY   int
-	CenterX, CenterY int
+type Room struct {
+	IsStart, IsEnd                                  bool
+	Width, Heigth                                   int
+	Enemies                                         int
+	Door                                            int
+	StartPointFromX, StartPointFromY, EndPointFromY int
+	CenterX, CenterY                                int
 }
 
-func NewRoom(startX, startY, width, heigth int) *RoomM {
-	return &RoomM{
-		StartX:  startX,
-		StartY:  startY,
-		Width:   width,
-		Heigth:  heigth,
-		CenterX: startX + width/2,
-		CenterY: startY + heigth/2,
+func NewRoom(startX, startY, width, heigth int) *Room {
+	return &Room{
+		StartPointFromX: startX,
+		StartPointFromY: startY,
+		Width:           width,
+		Heigth:          heigth,
+		CenterX:         startX + width/2,
+		CenterY:         startY + heigth/2,
 	}
 }
 
@@ -45,13 +48,27 @@ type Сorridor struct {
    ловкость,
    сила,
    текущее оружие; */
-type Hero struct {
-	Coordinates interface{}
-	MaxHp       int
-	CurrentHp   int
-	Dextery     int
-	Strength    int
-	Weapon      interface{}
+type Player struct {
+	X, Y      int
+	Sprite    rune
+	MaxHp     int
+	CurrentHp int
+	Dextery   int
+	Strength  int
+	Weapon    interface{}
+}
+
+func PlayerInit(r *Room) *Player {
+	return &Player{
+		X:      r.CenterX,
+		Y:      r.CenterY,
+		Sprite: '@',
+	}
+}
+
+func (p *Player) SetCoordinat(x, y int) {
+	p.X = x
+	p.Y = y
 }
 
 //Рюкзак;
