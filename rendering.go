@@ -25,6 +25,10 @@ import (
 */
 var txt int
 
+type Stat struct {
+	IsRun, IsMenuOpen, IsInventoryOpen bool
+}
+
 func RunView(s *Session) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
@@ -36,15 +40,14 @@ func RunView(s *Session) {
 		log.Fatal(err)
 	}
 
-	//player := NewSprite('@', 5, 5)
 	mapp := s.Mapp
 	player := s.Player
-
-	isRun := true
-	isMenuOpen := false
-	for isRun {
+	state := Stat{true, true, false}
+	for state.IsRun {
 		screen.Clear()
-		if !isMenuOpen {
+		if state.IsMenuOpen {
+			runMenu(screen)
+		} else if !state.IsInventoryOpen {
 			runGame(screen, player, &mapp)
 		} else {
 			openMenu(screen)
@@ -52,8 +55,15 @@ func RunView(s *Session) {
 		screen.Show()
 
 		event := screen.PollEvent()
-		checkInput(screen, &event, &isRun, &isMenuOpen, player, &mapp)
+		checkInput(&event, &state, player, &mapp)
 	}
+}
+
+func runMenu(screen tcell.Screen) {
+	DrawString(screen, 3, 3, "1) New Game")
+	DrawString(screen, 3, 4, "2) Continue")
+	DrawString(screen, 3, 5, "3) Leaderboard")
+	DrawString(screen, 3, 7, "4, q) Exit")
 }
 
 func runGame(screen tcell.Screen, player *Player, mapp *[100][40]rune) {
@@ -77,13 +87,13 @@ func openMenu(screen tcell.Screen) {
 	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", txt))
 }
 
-func checkInput(screen tcell.Screen, ev *tcell.Event, isRun *bool, isMenuOpen *bool, player *Player, mapp *[100][40]rune) {
+func checkInput(ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]rune) {
 	playerMoved := false
 	switch event := (*ev).(type) {
 	case *tcell.EventKey:
 		switch event.Rune() {
 		case 'q':
-			*isRun = false
+			state.IsRun = false
 		case 'w':
 			if CheckRoof(-1, *mapp, player) {
 				player.Y -= 1
@@ -105,13 +115,20 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, isRun *bool, isMenuOpen *b
 				playerMoved = true
 			}
 		case 'i':
-			if !*isMenuOpen {
-				*isMenuOpen = true
+			if !state.IsInventoryOpen {
+				state.IsInventoryOpen = true
 			} else {
-				*isMenuOpen = false
+				state.IsInventoryOpen = false
 			}
+		case '1':
+			state.IsMenuOpen = false
+		case '2':
+		case '3':
+		case '4':
+			state.IsRun = false
 		}
 	}
+
 	if playerMoved {
 		txt++
 	}
@@ -133,13 +150,6 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 		return true
 	default:
 		return false
-		/*
-			if mapp[player.X][player.Y+vector] != '.' && mapp[player.X][player.Y+vector] != '#' && mapp[player.X][player.Y+vector] != '+' {
-				return false
-			} else {
-				return true
-			}
-		*/
 	}
 }
 
@@ -153,10 +163,5 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 		return true
 	default:
 		return false
-		/*if mapp[player.X+vector][player.Y] != '.' && mapp[player.X+vector][player.Y] != '#' && mapp[player.X][player.Y+vector] != '+' {
-			return false
-		} else {
-			return true
-		}*/
 	}
 }
