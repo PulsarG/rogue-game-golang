@@ -2,10 +2,11 @@ package main
 
 //Игровая сессия;
 type Session struct {
-	CurrentLvl int
-	Mapp       [100][40]rune
-	Player     *Player
-	Rooms      [9]Room
+	CurrentLvl               int
+	Mapp                     [100][40]rune
+	Player                   *Player
+	Rooms                    [9]Room
+	StartRoomIdx, EndRoomIdx int
 	// возможно данные для статистики
 }
 

@@ -1,6 +1,8 @@
 package main
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 /*Реализуй модуль генерации уровней в уровне domain.
 
@@ -14,54 +16,63 @@ var minWidth, maxWidth = 10, 20
 var minHeigth, maxHeigth = 4, 7
 var mapp = [100][40]rune{}
 
-/*type Room struct {
-	StartPointFromX, StartPointFromY, EndPointFromY, Width, Heigth, CenterX, CenterY int
-}*/
+func (s *Session) GenMap() {
 
-func GenMap() ([100][40]rune, [9]Room) {
+	setStartEndRoom(s)
 
-	Rooms := [9]Room{}
-	Rooms[0].IsStart = true
-	//r1 := Room{}
-	Rooms[0].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[0].StartPointFromY = 1 + rand.Intn(5)  // для каждой комнаты, рандомить
-	Rooms[0].CreateRoom()
+	s.Rooms[0].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[0].StartPointFromY = 1 + rand.Intn(5)  // для каждой комнаты, рандомить
+	s.Rooms[0].CreateRoom()
 
-	Rooms[1].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[1].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
-	Rooms[1].CreateRoom()
+	s.Rooms[1].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[1].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
+	s.Rooms[1].CreateRoom()
 
-	Rooms[2].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[2].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
-	Rooms[2].CreateRoom()
+	s.Rooms[2].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[2].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
+	s.Rooms[2].CreateRoom()
 
-	Rooms[3].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[3].StartPointFromY = 13 + rand.Intn(5) // для каждой комнаты, рандомить
-	Rooms[3].CreateRoom()
+	s.Rooms[3].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[3].StartPointFromY = 13 + rand.Intn(5) // для каждой комнаты, рандомить
+	s.Rooms[3].CreateRoom()
 
-	Rooms[4].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[4].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
-	Rooms[4].CreateRoom()
+	s.Rooms[4].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[4].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
+	s.Rooms[4].CreateRoom()
 
-	Rooms[5].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[5].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
-	Rooms[5].CreateRoom()
+	s.Rooms[5].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[5].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
+	s.Rooms[5].CreateRoom()
 
-	Rooms[6].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[6].StartPointFromY = 26 + rand.Intn(5) // для каждой комнаты, рандомить
-	Rooms[6].CreateRoom()
+	s.Rooms[6].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[6].StartPointFromY = 26 + rand.Intn(5) // для каждой комнаты, рандомить
+	s.Rooms[6].CreateRoom()
 
-	Rooms[7].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[7].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
-	Rooms[7].CreateRoom()
+	s.Rooms[7].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[7].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
+	s.Rooms[7].CreateRoom()
 
-	Rooms[8].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
-	Rooms[8].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
-	Rooms[8].CreateRoom()
+	s.Rooms[8].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
+	s.Rooms[8].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
+	s.Rooms[8].CreateRoom()
 
-	connectRoom(&mapp, &Rooms)
+	s.Mapp = mapp
+	s.connectRoom()
+}
 
-	return mapp, Rooms
+func setStartEndRoom(s *Session) {
+	start := rand.Intn(9)
+	s.StartRoomIdx = start
+	s.Rooms[start].IsStart = true
+	var end int
+	for {
+		end = rand.Intn(9)
+		if start != end {
+			s.EndRoomIdx = end
+			s.Rooms[end].IsEnd = true
+			break
+		}
+	}
 }
 
 func (r *Room) CreateRoom() {
@@ -96,47 +107,49 @@ func (r *Room) GenRoom(
 
 }
 
-func connectRoom(mapp *[100][40]rune, r *[9]Room) {
+func (s *Session) connectRoom() {
 	if rand.Intn(2) == 0 {
-		applyHorTunel(mapp, r[0].CenterX, r[1].CenterX, r[0].CenterY)
-		applyVerTunel(mapp, r[0].CenterY, r[1].CenterY, r[1].CenterX)
+		s.applyHorTunel(0, 5)
+		s.applyVerTunel(0, 5)
 	} else {
-		applyVerTunel(mapp, r[0].CenterY, r[1].CenterY, r[0].CenterX)
-		applyHorTunel(mapp, r[0].CenterX, r[1].CenterX, r[1].CenterY)
+		s.applyVerTunel(0, 5)
+		s.applyHorTunel(0, 5)
 	}
 	if rand.Intn(2) == 0 {
-		applyHorTunel(mapp, r[1].CenterX, r[2].CenterX, r[1].CenterY)
-		applyVerTunel(mapp, r[1].CenterY, r[2].CenterY, r[2].CenterX)
+		s.applyHorTunel(2, 6)
+		s.applyVerTunel(2, 6)
 	} else {
-		applyVerTunel(mapp, r[1].CenterY, r[2].CenterY, r[1].CenterX)
-		applyHorTunel(mapp, r[1].CenterX, r[2].CenterX, r[2].CenterY)
+		s.applyVerTunel(2, 6)
+		s.applyHorTunel(2, 6)
 	}
 }
 
-func applyHorTunel(mapp *[100][40]rune, x1, x2, y int) {
-	minX, maxX := x1, x2
-	if x1 > x2 {
-		minX, maxX = x2, x1
+func (s *Session) applyHorTunel(a, b int) {
+	minX, maxX := s.Rooms[a].CenterX, s.Rooms[b].CenterX
+	y := s.Rooms[a].CenterY
+	if s.Rooms[a].CenterX > s.Rooms[b].CenterX {
+		maxX, minX = s.Rooms[a].CenterX, s.Rooms[b].CenterX
 	}
 	for x := minX; x <= maxX; x++ {
-		if mapp[x][y] == 0 {
-			mapp[x][y] = '#'
-		} else if mapp[x][y] == '|' {
-			mapp[x][y] = '+'
+		if s.Mapp[x][y] == 0 {
+			s.Mapp[x][y] = '#'
+		} else if s.Mapp[x][y] == '|' {
+			s.Mapp[x][y] = '+'
 		}
 	}
 }
 
-func applyVerTunel(mapp *[100][40]rune, y1, y2, x int) {
-	minY, maxY := y1, y2
-	if y1 > y2 {
-		minY, maxY = y2, y1
+func (s *Session) applyVerTunel(a, b int) {
+	minY, maxY := s.Rooms[a].CenterY, s.Rooms[b].CenterY
+	x := s.Rooms[b].CenterX
+	if s.Rooms[a].CenterY > s.Rooms[b].CenterY {
+		maxY, minY = s.Rooms[a].CenterY, s.Rooms[b].CenterY
 	}
 	for y := minY; y <= maxY; y++ {
-		if mapp[x][y] == 0 {
-			mapp[x][y] = '#'
-		} else if mapp[x][y] == '|' {
-			mapp[x][y] = '+'
+		if s.Mapp[x][y] == 0 {
+			s.Mapp[x][y] = '#'
+		} else if s.Mapp[x][y] == '-' {
+			s.Mapp[x][y] = '+'
 		}
 	}
 }
