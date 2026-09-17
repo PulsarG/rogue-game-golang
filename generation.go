@@ -108,19 +108,17 @@ func (r *Room) GenRoom(
 }
 
 func (s *Session) connectRoom() {
-	if rand.Intn(2) == 0 {
-		s.applyHorTunel(0, 5)
-		s.applyVerTunel(0, 5)
-	} else {
-		s.applyVerTunel(0, 5)
-		s.applyHorTunel(0, 5)
-	}
-	if rand.Intn(2) == 0 {
-		s.applyHorTunel(2, 6)
-		s.applyVerTunel(2, 6)
-	} else {
-		s.applyVerTunel(2, 6)
-		s.applyHorTunel(2, 6)
+	tun := GenTunnels()
+	for _, vv := range *tun {
+		v := vv[0]
+		k := vv[1]
+		if rand.Intn(2) == 0 {
+			s.applyHorTunel(v, k)
+			s.applyVerTunel(v, k)
+		} else {
+			s.applyVerTunel(v, k)
+			s.applyHorTunel(v, k)
+		}
 	}
 }
 
