@@ -17,7 +17,8 @@ var minHeigth, maxHeigth = 4, 7
 var mapp = [100][40]rune{}
 
 func (s *Session) GenMap() {
-
+	mapp = [100][40]rune{}
+	p := &Player{}
 	setStartEndRoom(s)
 
 	s.Rooms[0].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
@@ -58,6 +59,8 @@ func (s *Session) GenMap() {
 
 	s.Mapp = mapp
 	s.connectRoom()
+	s.Player = p
+	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx])
 }
 
 func setStartEndRoom(s *Session) {

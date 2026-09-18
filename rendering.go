@@ -40,22 +40,22 @@ func RunView(s *Session) {
 		log.Fatal(err)
 	}
 
-	mapp := s.Mapp
-	player := s.Player
+	//player := s.Player
 	state := Stat{true, true, false}
 	for state.IsRun {
 		screen.Clear()
 		if state.IsMenuOpen {
 			runMenu(screen)
 		} else if !state.IsInventoryOpen {
-			runGame(screen, player, &mapp)
+			mapp := s.Mapp
+			runGame(screen, s.Player, &mapp)
 		} else {
 			openMenu(screen)
 		}
 		screen.Show()
 
 		event := screen.PollEvent()
-		checkInput(&event, &state, player, &mapp)
+		checkInput(screen, &event, &state, s.Player, &s.Mapp, s)
 	}
 }
 
@@ -87,7 +87,7 @@ func openMenu(screen tcell.Screen) {
 	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", txt))
 }
 
-func checkInput(ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]rune) {
+func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]rune, s *Session) {
 	playerMoved := false
 	switch event := (*ev).(type) {
 	case *tcell.EventKey:
@@ -126,6 +126,9 @@ func checkInput(ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]run
 		case '3':
 		case '4':
 			state.IsRun = false
+		case 'm':
+			screen.Clear()
+			s.GenMap()
 		}
 	}
 
