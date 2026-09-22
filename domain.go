@@ -1,5 +1,7 @@
 package main
 
+import "math/rand"
+
 //Игровая сессия;
 type Session struct {
 	CurrentLvl               int
@@ -7,6 +9,7 @@ type Session struct {
 	Player                   *Player
 	Rooms                    [9]Room
 	StartRoomIdx, EndRoomIdx int
+	Enemys                   []*Enemy
 	// возможно данные для статистики
 }
 
@@ -34,13 +37,6 @@ func NewRoom(startX, startY, width, heigth int) *Room {
 		CenterX:         startX + width/2,
 		CenterY:         startY + heigth/2,
 	}
-}
-
-//Коридор;
-type Сorridor struct {
-	FirstDoor   interface{}
-	SecondDoor  interface{}
-	Coordinates interface{}
 }
 
 /* Персонаж:
@@ -84,13 +80,55 @@ type Backpack struct {
    сила,
    враждебность; */
 type Enemy struct {
-	Coordinates interface{}
-	Type        string
-	Difficulty  int
-	Hp          int
-	Dextery     int
-	Strength    int
-	Agro        int
+	X, Y       int
+	Type       int
+	Sprite     rune
+	Difficulty int
+	Hp         int
+	Dextery    int
+	Strength   int
+	Agro       int
+}
+
+func (s *Session) EnemysListInit() {
+	countEnemys := 3 + rand.Intn(s.CurrentLvl)
+	enemys := make([]*Enemy, 0, countEnemys)
+	for i := 0; i < countEnemys; i++ {
+		enemys = append(enemys, s.enemyOneInit())
+	}
+	s.Enemys = enemys
+}
+
+func (s *Session) enemyOneInit() *Enemy {
+	e := Enemy{}
+	for {
+		room := rand.Intn(9)
+		if s.Rooms[room].IsStart {
+			continue
+		} else {
+			e.X = s.Rooms[room].CenterX
+			e.Y = s.Rooms[room].CenterY
+			e.Type = rand.Intn(4)
+			e.SelectSprite()
+			break
+		}
+	}
+	return &e
+}
+
+func (e *Enemy) SelectSprite() {
+	switch e.Type {
+	case 0:
+		e.Sprite = 'a'
+	case 1:
+		e.Sprite = 'z'
+	case 2:
+		e.Sprite = 's'
+	case 3:
+		e.Sprite = 'v'
+	default:
+		e.Sprite = 'x'
+	}
 }
 
 /* Предмет:

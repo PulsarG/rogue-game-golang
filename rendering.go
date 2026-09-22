@@ -47,8 +47,8 @@ func RunView(s *Session) {
 		if state.IsMenuOpen {
 			runMenu(screen)
 		} else if !state.IsInventoryOpen {
-			mapp := s.Mapp
-			runGame(screen, s.Player, &mapp)
+			//	mapp := s.Mapp
+			runGame(screen, s)
 		} else {
 			openMenu(screen)
 		}
@@ -66,11 +66,11 @@ func runMenu(screen tcell.Screen) {
 	DrawString(screen, 3, 7, "4, q) Exit")
 }
 
-func runGame(screen tcell.Screen, player *Player, mapp *[100][40]rune) {
+func runGame(screen tcell.Screen, s *Session) {
 
 	for i := range 100 {
 		for j := range 40 {
-			screen.SetContent(i, j, mapp[i][j], nil, tcell.StyleDefault)
+			screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
 		}
 	}
 	txt = 0
@@ -80,7 +80,10 @@ func runGame(screen tcell.Screen, player *Player, mapp *[100][40]rune) {
 		42,
 		fmt.Sprint("Message: ", txt),
 	)
-	Draw(player, screen)
+	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen)
+	for _, e := range s.Enemys {
+		Draw(e.X, e.Y, e.Sprite, screen)
+	}
 }
 
 func openMenu(screen tcell.Screen) {

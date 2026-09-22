@@ -15,11 +15,11 @@ func NewSprite(char rune, x, y int) *Sprite {
 	}
 }
 
-func Draw(p *Player, screen tcell.Screen) {
+func Draw(x, y int, sprite rune, screen tcell.Screen) {
 	screen.SetContent(
-		p.X,
-		p.Y,
-		p.Sprite,
+		x,
+		y,
+		sprite,
 		nil,
 		tcell.StyleDefault,
 	)
