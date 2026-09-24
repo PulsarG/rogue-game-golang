@@ -106,7 +106,7 @@ type Enemy struct {
 func (s *Session) EnemysListInit() {
 	countEnemys := 3 + rand.Intn(s.CurrentLvl)
 	enemys := make([]*Enemy, 0, countEnemys)
-	for i := 0; i < countEnemys; i++ {
+	for _ = range countEnemys {
 		enemys = append(enemys, s.enemyOneInit())
 	}
 	s.Enemys = enemys
@@ -119,8 +119,18 @@ func (s *Session) enemyOneInit() *Enemy {
 		if s.Rooms[room].IsStart {
 			continue
 		} else {
-			e.X = s.Rooms[room].CenterX
-			e.Y = s.Rooms[room].CenterY
+			nicePoint := false
+			for !nicePoint {
+				x := s.Rooms[room].CenterX + rand.Intn(3)
+				y := s.Rooms[room].CenterY + rand.Intn(3)
+				if s.Mapp[x][y] != '.' {
+					continue
+				} else {
+					e.X = x
+					e.Y = y
+					nicePoint = true
+				}
+			}
 			e.Type = rand.Intn(4)
 			e.SelectSprite()
 			break

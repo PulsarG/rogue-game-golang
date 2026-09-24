@@ -27,7 +27,7 @@ import (
 var txt int
 
 type Stat struct {
-	IsRun, IsMenuOpen, IsInventoryOpen, IsStartNewGame bool
+	IsRun, IsMainGameRun, IsMenuOpen, IsGameMenuOpen, IsInventoryOpen, IsStartNewGame bool
 }
 
 var s *Session
@@ -44,7 +44,7 @@ func RunView() {
 	}
 	//player := s.Player
 	s = initNewGame()
-	state := Stat{true, true, false, false}
+	state := Stat{true, false, true, false, false, false}
 	for state.IsRun {
 		if state.IsStartNewGame {
 			s = initNewGame()
@@ -53,11 +53,16 @@ func RunView() {
 		screen.Clear()
 		if state.IsMenuOpen {
 			runMenu(screen)
-		} else if !state.IsInventoryOpen {
+		} else if state.IsInventoryOpen {
 			//	mapp := s.Mapp
+			//runGame(screen, s)
+			runIventory(screen)
+		} else if state.IsGameMenuOpen {
+			runGameMenu(screen)
+		} else if state.IsMainGameRun {
 			runGame(screen, s)
 		} else {
-			openMenu(screen)
+			//openMenu(screen)
 		}
 		screen.Show()
 
@@ -81,6 +86,14 @@ func runMenu(screen tcell.Screen) {
 	DrawString(screen, 3, 4, "2) Continue")
 	DrawString(screen, 3, 5, "3) Leaderboard")
 	DrawString(screen, 3, 7, "4, q) Exit")
+}
+
+func runIventory(screen tcell.Screen) {
+	DrawString(screen, 3, 3, "IVENTORY")
+}
+func runGameMenu(screen tcell.Screen) {
+	DrawString(screen, 3, 3, "m) Continue")
+	DrawString(screen, 3, 4, "e) Save and Exit")
 }
 
 func runGame(screen tcell.Screen, s *Session) {
@@ -140,19 +153,22 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Playe
 			} else {
 				state.IsInventoryOpen = false
 			}
-		case '1':
-			state.IsMenuOpen = false
-			state.IsStartNewGame = true
-		case '2':
-			if state.IsMenuOpen {
+		case 'e':
+			if state.IsGameMenuOpen {
 				err := WriteSave("session.json", s)
 				if err != nil {
 					fmt.Println(err)
 					return
 				}
+				state.IsGameMenuOpen = false
+				state.IsMenuOpen = true
+				state.IsMainGameRun = false
 			}
-			state.IsStartNewGame = false
-		case '3':
+		case '1':
+			state.IsMenuOpen = false
+			state.IsStartNewGame = true
+			state.IsMainGameRun = true
+		case '2':
 			if state.IsMenuOpen {
 				var err error
 				s, err = ReadSave[*Session]("session.json")
@@ -161,12 +177,19 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Playe
 					return
 				}
 				state.IsMenuOpen = false
+				state.IsMainGameRun = true
 			}
 		case '4':
 			state.IsRun = false
 		case 'm':
-			screen.Clear()
-			s.GenMap()
+			// новая карта
+			//			screen.Clear()
+			//			s.GenMap()
+			if !state.IsGameMenuOpen {
+				state.IsGameMenuOpen = true
+			} else {
+				state.IsGameMenuOpen = false
+			}
 		}
 	}
 
