@@ -126,7 +126,12 @@ func (s *Session) connectRoom() {
 }
 
 func (s *Session) applyHorTunel(a, b int) {
-	minX, maxX := s.Rooms[a].CenterX, s.Rooms[b].CenterX
+	minX, maxX := 0, 0
+	if s.Rooms[a].Heigth-s.Rooms[b].Heigth == 1 || s.Rooms[a].Heigth-s.Rooms[b].Heigth == -1 {
+		minX++
+	}
+	minX += s.Rooms[a].CenterX
+	maxX += s.Rooms[b].CenterX
 	y := s.Rooms[a].CenterY
 	if s.Rooms[a].CenterX > s.Rooms[b].CenterX {
 		maxX, minX = s.Rooms[a].CenterX, s.Rooms[b].CenterX
@@ -135,6 +140,8 @@ func (s *Session) applyHorTunel(a, b int) {
 		if s.Mapp[x][y] == 0 {
 			s.Mapp[x][y] = '#'
 		} else if s.Mapp[x][y] == '|' {
+			s.Mapp[x][y] = '+'
+		} else if s.Mapp[x][y] == '-' {
 			s.Mapp[x][y] = '+'
 		}
 	}
@@ -150,6 +157,8 @@ func (s *Session) applyVerTunel(a, b int) {
 		if s.Mapp[x][y] == 0 {
 			s.Mapp[x][y] = '#'
 		} else if s.Mapp[x][y] == '-' {
+			s.Mapp[x][y] = '+'
+		} else if s.Mapp[x][y] == '|' {
 			s.Mapp[x][y] = '+'
 		}
 	}
