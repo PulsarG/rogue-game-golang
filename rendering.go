@@ -60,6 +60,7 @@ func RunView() {
 		} else if state.IsGameMenuOpen {
 			runGameMenu(screen)
 		} else if state.IsMainGameRun {
+			runFight()
 			runGame(screen, s)
 		} else {
 			//openMenu(screen)
@@ -103,6 +104,12 @@ func runGame(screen tcell.Screen, s *Session) {
 			screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
 		}
 	}
+	DrawString(
+		screen,
+		102,
+		1,
+		fmt.Sprint("Message: ", s.StatusDoing),
+	)
 	txt = 0
 	DrawString(
 		screen,
@@ -113,6 +120,17 @@ func runGame(screen tcell.Screen, s *Session) {
 	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
 	for _, e := range s.Enemys {
 		Draw(e.X, e.Y, e.Sprite, screen, &e.ColorSprite)
+	}
+}
+
+func runFight() {
+	for i, e := range s.Enemys {
+		if e.CheckFight(s.Player) {
+			s.StatusDoing = fmt.Sprintf("Killing enemys: %c", e.Sprite)
+			s.Enemys[i] = s.Enemys[len(s.Enemys)-1]
+			s.Enemys = s.Enemys[:len(s.Enemys)-1]
+			//s.Enemys = append(s.Enemys[:i], s.Enemys[i+1:]...)
+		}
 	}
 }
 

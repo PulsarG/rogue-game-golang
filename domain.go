@@ -14,6 +14,7 @@ type Session struct {
 	Rooms                    [9]Room
 	StartRoomIdx, EndRoomIdx int
 	Enemys                   []*Enemy
+	StatusDoing              string
 	// возможно данные для статистики
 }
 
@@ -61,6 +62,7 @@ type Player struct {
 	Dextery     int
 	Strength    int
 	Weapon      interface{}
+	FightWith   *Enemy
 }
 
 func PlayerInit(r *Room) *Player {
@@ -157,6 +159,13 @@ func (e *Enemy) SelectSprite() {
 		e.Sprite = 'x'
 		e.ColorSprite = tcell.ColorWhite
 	}
+}
+
+func (e *Enemy) CheckFight(p *Player) bool {
+	if e.X+e.Agro == p.X && e.Y+e.Agro == p.Y {
+		return true
+	}
+	return false
 }
 
 /*
