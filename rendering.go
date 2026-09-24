@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -26,10 +27,12 @@ import (
 var txt int
 
 type Stat struct {
-	IsRun, IsMenuOpen, IsInventoryOpen bool
+	IsRun, IsMenuOpen, IsInventoryOpen, IsStartNewGame bool
 }
 
-func RunView(s *Session) {
+var s *Session
+
+func RunView() {
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatal(err)
@@ -39,10 +42,14 @@ func RunView(s *Session) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	//player := s.Player
-	state := Stat{true, true, false}
+	s = initNewGame()
+	state := Stat{true, true, false, false}
 	for state.IsRun {
+		if state.IsStartNewGame {
+			s = initNewGame()
+			state.IsStartNewGame = false
+		}
 		screen.Clear()
 		if state.IsMenuOpen {
 			runMenu(screen)
@@ -55,8 +62,18 @@ func RunView(s *Session) {
 		screen.Show()
 
 		event := screen.PollEvent()
-		checkInput(screen, &event, &state, s.Player, &s.Mapp, s)
+		checkInput(screen, &event, &state, s.Player, &s.Mapp)
 	}
+}
+
+func initNewGame() *Session {
+
+	s := Session{}
+	s.GenMap()
+	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx])
+	s.CurrentLvl = 5 + rand.Intn(5)
+	s.EnemysListInit()
+	return &s
 }
 
 func runMenu(screen tcell.Screen) {
@@ -80,9 +97,9 @@ func runGame(screen tcell.Screen, s *Session) {
 		42,
 		fmt.Sprint("Message: ", txt),
 	)
-	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen)
+	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
 	for _, e := range s.Enemys {
-		Draw(e.X, e.Y, e.Sprite, screen)
+		Draw(e.X, e.Y, e.Sprite, screen, &e.ColorSprite)
 	}
 }
 
@@ -90,7 +107,7 @@ func openMenu(screen tcell.Screen) {
 	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", txt))
 }
 
-func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]rune, s *Session) {
+func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]rune) {
 	playerMoved := false
 	switch event := (*ev).(type) {
 	case *tcell.EventKey:
@@ -125,8 +142,26 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Playe
 			}
 		case '1':
 			state.IsMenuOpen = false
+			state.IsStartNewGame = true
 		case '2':
+			if state.IsMenuOpen {
+				err := WriteSave("session.json", s)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+			}
+			state.IsStartNewGame = false
 		case '3':
+			if state.IsMenuOpen {
+				var err error
+				s, err = ReadSave[*Session]("session.json")
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				state.IsMenuOpen = false
+			}
 		case '4':
 			state.IsRun = false
 		case 'm':

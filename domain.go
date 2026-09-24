@@ -1,8 +1,12 @@
 package main
 
-import "math/rand"
+import (
+	"math/rand"
 
-//Игровая сессия;
+	"github.com/gdamore/tcell/v2"
+)
+
+// Игровая сессия;
 type Session struct {
 	CurrentLvl               int
 	Mapp                     [100][40]rune
@@ -13,12 +17,12 @@ type Session struct {
 	// возможно данные для статистики
 }
 
-//Уровень;
+// Уровень;
 type Level struct {
 	CountEnemy int
 }
 
-//Комната;
+// Комната;
 type Room struct {
 	IsStart, IsEnd                                  bool
 	Width, Heigth                                   int
@@ -39,27 +43,32 @@ func NewRoom(startX, startY, width, heigth int) *Room {
 	}
 }
 
-/* Персонаж:
-   максимальный уровень здоровья,
-   здоровье,
-   ловкость,
-   сила,
-   текущее оружие; */
+/*
+Персонаж:
+
+	максимальный уровень здоровья,
+	здоровье,
+	ловкость,
+	сила,
+	текущее оружие;
+*/
 type Player struct {
-	X, Y      int
-	Sprite    rune
-	MaxHp     int
-	CurrentHp int
-	Dextery   int
-	Strength  int
-	Weapon    interface{}
+	X, Y        int
+	Sprite      rune
+	ColorSprite tcell.Color
+	MaxHp       int
+	CurrentHp   int
+	Dextery     int
+	Strength    int
+	Weapon      interface{}
 }
 
 func PlayerInit(r *Room) *Player {
 	return &Player{
-		X:      r.CenterX,
-		Y:      r.CenterY,
-		Sprite: '@',
+		X:           r.CenterX,
+		Y:           r.CenterY,
+		Sprite:      '@',
+		ColorSprite: tcell.ColorDefault,
 	}
 }
 
@@ -68,26 +77,30 @@ func (p *Player) SetCoordinat(x, y int) {
 	p.Y = y
 }
 
-//Рюкзак;
+// Рюкзак;
 type Backpack struct {
 	Items []interface{}
 }
 
-/* Противник:
-   тип,
-   здоровье,
-   ловкость,
-   сила,
-   враждебность; */
+/*
+Противник:
+
+	тип,
+	здоровье,
+	ловкость,
+	сила,
+	враждебность;
+*/
 type Enemy struct {
-	X, Y       int
-	Type       int
-	Sprite     rune
-	Difficulty int
-	Hp         int
-	Dextery    int
-	Strength   int
-	Agro       int
+	X, Y        int
+	Type        int
+	Sprite      rune
+	ColorSprite tcell.Color
+	Difficulty  int
+	Hp          int
+	Dextery     int
+	Strength    int
+	Agro        int
 }
 
 func (s *Session) EnemysListInit() {
@@ -120,25 +133,33 @@ func (e *Enemy) SelectSprite() {
 	switch e.Type {
 	case 0:
 		e.Sprite = 'a'
+		e.ColorSprite = tcell.ColorRed
 	case 1:
 		e.Sprite = 'z'
+		e.ColorSprite = tcell.ColorGreen
 	case 2:
 		e.Sprite = 's'
+		e.ColorSprite = tcell.ColorBlue
 	case 3:
 		e.Sprite = 'v'
+		e.ColorSprite = tcell.ColorYellow
 	default:
 		e.Sprite = 'x'
+		e.ColorSprite = tcell.ColorWhite
 	}
 }
 
-/* Предмет:
-   тип,
-   подтип,
-   здоровье (количество единиц повышения, для еды),
-   максимальный уровень здоровья (количество единиц повышения, для свитков и эликсиров, вместе с этим повышается и сам уровень здоровья),
-   ловкость (количество единиц повышения, для свитков и эликсиров),
-   сила (количество единиц повышения, для свитков, эликсиров и оружия),
-   стоимость (для сокровищ). */
+/*
+Предмет:
+
+	тип,
+	подтип,
+	здоровье (количество единиц повышения, для еды),
+	максимальный уровень здоровья (количество единиц повышения, для свитков и эликсиров, вместе с этим повышается и сам уровень здоровья),
+	ловкость (количество единиц повышения, для свитков и эликсиров),
+	сила (количество единиц повышения, для свитков, эликсиров и оружия),
+	стоимость (для сокровищ). */
+
 type Item struct {
 	ForRating     bool
 	Coordinates   interface{}
