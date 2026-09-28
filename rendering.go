@@ -69,6 +69,7 @@ func RunView() {
 
 		event := screen.PollEvent()
 		checkInput(screen, &event, &state, s.Player, &s.Mapp)
+		s.StatusDoing = ""
 	}
 }
 

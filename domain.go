@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/gdamore/tcell/v2"
@@ -146,26 +147,86 @@ func (e *Enemy) SelectSprite() {
 	case 0:
 		e.Sprite = 'a'
 		e.ColorSprite = tcell.ColorRed
+		e.Agro = 2
 	case 1:
 		e.Sprite = 'z'
 		e.ColorSprite = tcell.ColorGreen
+		e.Agro = 2
 	case 2:
 		e.Sprite = 's'
 		e.ColorSprite = tcell.ColorBlue
+		e.Agro = 2
 	case 3:
 		e.Sprite = 'v'
 		e.ColorSprite = tcell.ColorYellow
+		e.Agro = 2
 	default:
 		e.Sprite = 'x'
 		e.ColorSprite = tcell.ColorWhite
+		e.Agro = 2
 	}
 }
 
 func (e *Enemy) CheckFight(p *Player) bool {
-	if e.X+e.Agro == p.X && e.Y+e.Agro == p.Y {
-		return true
+	// check
+	if e.checkAgro(p) {
+		s.StatusDoing = fmt.Sprintf("In agro %c", e.Sprite)
+		e.moveToPlayer(p)
 	}
-	return false
+	// move
+	//moveToPlayer()
+	//smash
+	//smashPLayer()
+	//dea
+	// remove
+	//drop
+	if e.X == p.X && e.Y == p.Y {
+		s.StatusDoing = fmt.Sprintf("!!! %d", 1)
+		return true
+	} else {
+		return false
+	}
+}
+
+func (e *Enemy) checkAgro(p *Player) bool {
+	dx := abs(e.X - p.X)
+	dy := abs(e.Y - p.Y)
+	distance := max(dx, dy)
+	//if dy > dx {
+	//	distance = dy
+	//	}
+
+	if distance <= e.Agro {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (e *Enemy) moveToPlayer(p *Player) {
+	vectorX := p.X - e.X
+	vectorY := p.Y - e.Y
+	if vectorX != 0 {
+		if vectorX > 0 {
+			e.X += 1
+		} else {
+			e.X -= 1
+		}
+	}
+	if vectorY != 0 {
+		if vectorY > 0 {
+			e.Y += 1
+		} else {
+			e.Y -= 1
+		}
+	}
+}
+
+func abs(v int) int {
+	if v < 0 {
+		return -v
+	}
+	return v
 }
 
 /*
