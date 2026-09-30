@@ -61,7 +61,7 @@ func RunView() {
 			runGameMenu(screen)
 		} else if state.IsMainGameRun {
 			runFight()
-			runGame(screen, s)
+			runGame(screen)
 		} else {
 			//openMenu(screen)
 		}
@@ -69,7 +69,7 @@ func RunView() {
 
 		event := screen.PollEvent()
 		checkInput(screen, &event, &state, s.Player, &s.Mapp)
-		s.StatusDoing = ""
+		//s.StatusDoing = ""
 	}
 }
 
@@ -78,7 +78,7 @@ func initNewGame() *Session {
 	s := Session{}
 	s.GenMap()
 	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx])
-	s.CurrentLvl = 5 + rand.Intn(5)
+	s.CurrentLvl = 1
 	s.EnemysListInit()
 	return &s
 }
@@ -98,7 +98,7 @@ func runGameMenu(screen tcell.Screen) {
 	DrawString(screen, 3, 4, "e) Save and Exit")
 }
 
-func runGame(screen tcell.Screen, s *Session) {
+func runGame(screen tcell.Screen) {
 
 	for i := range 100 {
 		for j := range 40 {
@@ -109,14 +109,44 @@ func runGame(screen tcell.Screen, s *Session) {
 		screen,
 		102,
 		1,
-		fmt.Sprint("Message: ", s.StatusDoing),
+		fmt.Sprintf("Message: %s", s.StatusDoing),
 	)
 	txt = 0
 	DrawString(
 		screen,
-		3,
-		42,
-		fmt.Sprint("Message: ", txt),
+		102,
+		10,
+		fmt.Sprint("Lvl: ", s.CurrentLvl),
+	)
+	DrawString(
+		screen,
+		102,
+		11,
+		fmt.Sprint("HP: ", s.Player.CurrentHp),
+	)
+	DrawString(
+		screen,
+		102,
+		12,
+		fmt.Sprint("Max HP: ", s.Player.MaxHp),
+	)
+	DrawString(
+		screen,
+		102,
+		13,
+		fmt.Sprint("Str: ", s.Player.Strength),
+	)
+	DrawString(
+		screen,
+		102,
+		14,
+		fmt.Sprint("Dex: ", s.Player.Dextery),
+	)
+	DrawString(
+		screen,
+		102,
+		15,
+		fmt.Sprintf(": /n\n %c", s.Mapp[s.Player.X][s.Player.Y+1]),
 	)
 	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
 	for _, e := range s.Enemys {
@@ -140,31 +170,28 @@ func openMenu(screen tcell.Screen) {
 }
 
 func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]rune) {
-	playerMoved := false
 	switch event := (*ev).(type) {
 	case *tcell.EventKey:
 		switch event.Rune() {
 		case 'q':
 			state.IsRun = false
 		case 'w':
-			if CheckRoof(-1, *mapp, player) {
-				player.Y -= 1
-				playerMoved = true
+			if s.checkFightY(-1, player) {
+				if CheckRoof(-1, *mapp, player) {
+					player.Y -= 1
+				}
 			}
 		case 'a':
 			if CheckWall(-1, *mapp, player) {
 				player.X -= 1
-				playerMoved = true
 			}
 		case 's':
 			if CheckRoof(1, *mapp, player) {
 				player.Y += 1
-				playerMoved = true
 			}
 		case 'd':
 			if CheckWall(1, *mapp, player) {
 				player.X += 1
-				playerMoved = true
 			}
 		case 'i':
 			if !state.IsInventoryOpen {
@@ -212,8 +239,37 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Playe
 		}
 	}
 
-	if playerMoved {
-		txt++
+}
+
+func (s *Session) checkFightX(v int) bool {
+	for i, e := range s.Enemys {
+		if s.Player.X+v == e.X && s.Player.Y == e.Y {
+			s.Player.FightWith = e
+			s.giveHit(s.Enemys[i])
+			e.IsTakeSmash = true
+			return false
+		}
+	}
+	return true
+}
+func (s *Session) checkFightY(v int, p *Player) bool {
+	for i, e := range s.Enemys {
+		if p.X == e.X && p.Y+v == e.Y {
+			s.Player.FightWith = e
+			s.giveHit(s.Enemys[i])
+			return false
+		}
+	}
+	return true
+}
+
+func (s *Session) giveHit(e *Enemy) {
+	if rand.Intn(e.Dextery) > s.Player.Dextery {
+		s.StatusDoing = "Игрок промахнулся"
+		return
+	} else {
+		s.StatusDoing = fmt.Sprintf("Игрок нанес %d урона", s.Player.Strength)
+		e.Hp -= s.Player.Strength
 	}
 }
 

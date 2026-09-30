@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 
 	"github.com/gdamore/tcell/v2"
@@ -71,6 +70,10 @@ func PlayerInit(r *Room) *Player {
 		X:           r.CenterX,
 		Y:           r.CenterY,
 		Sprite:      '@',
+		CurrentHp:   10,
+		MaxHp:       10,
+		Strength:    1,
+		Dextery:     3,
 		ColorSprite: tcell.ColorDefault,
 	}
 }
@@ -104,6 +107,7 @@ type Enemy struct {
 	Dextery     int
 	Strength    int
 	Agro        int
+	IsTakeSmash bool
 }
 
 func (s *Session) EnemysListInit() {
@@ -148,54 +152,60 @@ func (e *Enemy) SelectSprite() {
 		e.Sprite = 'a'
 		e.ColorSprite = tcell.ColorRed
 		e.Agro = 2
+		e.Hp = 3
+		e.Dextery = 1
 	case 1:
 		e.Sprite = 'z'
 		e.ColorSprite = tcell.ColorGreen
 		e.Agro = 2
+		e.Hp = 3
+		e.Dextery = 10
 	case 2:
 		e.Sprite = 's'
 		e.ColorSprite = tcell.ColorBlue
 		e.Agro = 2
+		e.Hp = 3
+		e.Dextery = 1
 	case 3:
 		e.Sprite = 'v'
 		e.ColorSprite = tcell.ColorYellow
 		e.Agro = 2
+		e.Hp = 3
+		e.Dextery = 1
 	default:
 		e.Sprite = 'x'
 		e.ColorSprite = tcell.ColorWhite
 		e.Agro = 2
+		e.Hp = 3
+		e.Dextery = 1
 	}
 }
 
 func (e *Enemy) CheckFight(p *Player) bool {
+	res := false
 	// check
 	if e.checkAgro(p) {
-		s.StatusDoing = fmt.Sprintf("In agro %c", e.Sprite)
+		//	s.StatusDoing = fmt.Sprintf("In agro %c", e.Sprite)
 		e.moveToPlayer(p)
 	}
-	// move
-	//moveToPlayer()
 	//smash
+	if e.IsTakeSmash {
+	}
 	//smashPLayer()
 	//dea
+	if e.Hp <= 0 {
+		s.Mapp[e.X][e.Y] = '.'
+		res = true
+	}
 	// remove
 	//drop
-	if e.X == p.X && e.Y == p.Y {
-		s.StatusDoing = fmt.Sprintf("!!! %d", 1)
-		return true
-	} else {
-		return false
-	}
+	return res
 }
 
 func (e *Enemy) checkAgro(p *Player) bool {
 	dx := abs(e.X - p.X)
 	dy := abs(e.Y - p.Y)
 	distance := max(dx, dy)
-	//if dy > dx {
-	//	distance = dy
-	//	}
-
 	if distance <= e.Agro {
 		return true
 	} else {
@@ -206,19 +216,81 @@ func (e *Enemy) checkAgro(p *Player) bool {
 func (e *Enemy) moveToPlayer(p *Player) {
 	vectorX := p.X - e.X
 	vectorY := p.Y - e.Y
-	if vectorX != 0 {
-		if vectorX > 0 {
-			e.X += 1
-		} else {
-			e.X -= 1
+	if rand.Intn(2) == 0 {
+		if vectorX != 0 {
+			if vectorX > 0 {
+				if e.checkRuneX(1, p) {
+					e.X += 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X-1][e.Y] = '.'
+				}
+			} else {
+				if e.checkRuneX(-1, p) {
+					e.X -= 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X+1][e.Y] = '.'
+				}
+			}
+		} else if vectorY != 0 {
+			if vectorY > 0 {
+				if e.checkRuneY(1, p) {
+					e.Y += 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X][e.Y-1] = '.'
+				}
+			} else {
+				if e.checkRuneY(-1, p) {
+					e.Y -= 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X][e.Y+1] = '.'
+				}
+			}
+		}
+	} else {
+		if vectorY != 0 {
+			if vectorY > 0 {
+				if e.checkRuneY(1, p) {
+					e.Y += 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X][e.Y-1] = '.'
+				}
+			} else {
+				if e.checkRuneY(1, p) {
+					e.Y -= 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X][e.Y+1] = '.'
+				}
+			}
+		} else if vectorX != 0 {
+			if vectorX > 0 {
+				if e.checkRuneX(1, p) {
+					e.X += 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X-1][e.Y] = '.'
+				}
+			} else {
+				if e.checkRuneX(1, p) {
+					e.X -= 1
+					s.Mapp[e.X][e.Y] = e.Sprite
+					s.Mapp[e.X+1][e.Y] = '.'
+				}
+			}
 		}
 	}
-	if vectorY != 0 {
-		if vectorY > 0 {
-			e.Y += 1
-		} else {
-			e.Y -= 1
-		}
+}
+
+func (e *Enemy) checkRuneX(v int, p *Player) bool {
+	if s.Mapp[e.X+v][e.Y] != '.' || (e.X+v == p.X && e.Y == p.Y) {
+		return false
+	} else {
+		return true
+	}
+}
+func (e *Enemy) checkRuneY(v int, p *Player) bool {
+	if s.Mapp[e.X][e.Y+v] != '.' || (e.X == p.X && e.Y+v == p.Y) {
+		return false
+	} else {
+		return true
 	}
 }
 
