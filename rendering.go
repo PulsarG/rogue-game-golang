@@ -109,7 +109,13 @@ func runGame(screen tcell.Screen) {
 		screen,
 		102,
 		1,
-		fmt.Sprintf("Message: %s", s.StatusDoing),
+		fmt.Sprintf("%s", s.PlayerStatusDoing),
+	)
+	DrawString(
+		screen,
+		102,
+		2,
+		fmt.Sprintf("%s", s.EnemyStatusDoing),
 	)
 	txt = 0
 	DrawString(
@@ -157,7 +163,7 @@ func runGame(screen tcell.Screen) {
 func runFight() {
 	for i, e := range s.Enemys {
 		if e.CheckFight(s.Player) {
-			s.StatusDoing = fmt.Sprintf("Killing enemys: %c", e.Sprite)
+			s.PlayerStatusDoing = fmt.Sprintf("Игрок убил %s", e.Name)
 			s.Enemys[i] = s.Enemys[len(s.Enemys)-1]
 			s.Enemys = s.Enemys[:len(s.Enemys)-1]
 			//s.Enemys = append(s.Enemys[:i], s.Enemys[i+1:]...)
@@ -182,16 +188,22 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Playe
 				}
 			}
 		case 'a':
-			if CheckWall(-1, *mapp, player) {
-				player.X -= 1
+			if s.checkFightX(-1, player) {
+				if CheckWall(-1, *mapp, player) {
+					player.X -= 1
+				}
 			}
 		case 's':
-			if CheckRoof(1, *mapp, player) {
-				player.Y += 1
+			if s.checkFightY(1, player) {
+				if CheckRoof(1, *mapp, player) {
+					player.Y += 1
+				}
 			}
 		case 'd':
-			if CheckWall(1, *mapp, player) {
-				player.X += 1
+			if s.checkFightX(1, player) {
+				if CheckWall(1, *mapp, player) {
+					player.X += 1
+				}
 			}
 		case 'i':
 			if !state.IsInventoryOpen {
@@ -241,9 +253,9 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Playe
 
 }
 
-func (s *Session) checkFightX(v int) bool {
+func (s *Session) checkFightX(v int, p *Player) bool {
 	for i, e := range s.Enemys {
-		if s.Player.X+v == e.X && s.Player.Y == e.Y {
+		if p.X+v == e.X && p.Y == e.Y {
 			s.Player.FightWith = e
 			s.giveHit(s.Enemys[i])
 			e.IsTakeSmash = true
@@ -264,12 +276,25 @@ func (s *Session) checkFightY(v int, p *Player) bool {
 }
 
 func (s *Session) giveHit(e *Enemy) {
-	if rand.Intn(e.Dextery) > s.Player.Dextery {
-		s.StatusDoing = "Игрок промахнулся"
-		return
+	if rand.Intn(7)+s.Player.Dextery < e.Dextery {
+		s.PlayerStatusDoing = "Игрок промахнулся"
+		//return
 	} else {
-		s.StatusDoing = fmt.Sprintf("Игрок нанес %d урона", s.Player.Strength)
-		e.Hp -= s.Player.Strength
+		damage := rand.Intn(s.Player.Strength+s.Player.Weapon.Damage) + 1
+		e.Hp -= damage
+		s.PlayerStatusDoing = fmt.Sprintf("Игрок нанес %d урона", damage)
+	}
+	e.IsTakeSmash = true
+}
+func (s *Session) answerHit(e *Enemy) {
+	ch := rand.Intn(7)
+	if ch+e.Dextery < s.Player.Dextery {
+		s.EnemyStatusDoing = "Враг промахнулся"
+		//return
+	} else {
+		damage := rand.Intn(e.Strength) + 1
+		s.Player.CurrentHp -= damage
+		s.EnemyStatusDoing = fmt.Sprintf("Враг нанес %d урона", damage)
 	}
 }
 

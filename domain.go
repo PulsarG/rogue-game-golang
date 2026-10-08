@@ -8,13 +8,13 @@ import (
 
 // Игровая сессия;
 type Session struct {
-	CurrentLvl               int
-	Mapp                     [100][40]rune
-	Player                   *Player
-	Rooms                    [9]Room
-	StartRoomIdx, EndRoomIdx int
-	Enemys                   []*Enemy
-	StatusDoing              string
+	CurrentLvl                          int
+	Mapp                                [100][40]rune
+	Player                              *Player
+	Rooms                               [9]Room
+	StartRoomIdx, EndRoomIdx            int
+	Enemys                              []*Enemy
+	PlayerStatusDoing, EnemyStatusDoing string
 	// возможно данные для статистики
 }
 
@@ -61,7 +61,7 @@ type Player struct {
 	CurrentHp   int
 	Dextery     int
 	Strength    int
-	Weapon      interface{}
+	Weapon      *Weapon
 	FightWith   *Enemy
 }
 
@@ -72,9 +72,10 @@ func PlayerInit(r *Room) *Player {
 		Sprite:      '@',
 		CurrentHp:   10,
 		MaxHp:       10,
-		Strength:    1,
+		Strength:    3,
 		Dextery:     3,
 		ColorSprite: tcell.ColorDefault,
+		Weapon:      initWeapon(),
 	}
 }
 
@@ -100,6 +101,7 @@ type Backpack struct {
 type Enemy struct {
 	X, Y        int
 	Type        int
+	Name        string
 	Sprite      rune
 	ColorSprite tcell.Color
 	Difficulty  int
@@ -154,30 +156,37 @@ func (e *Enemy) SelectSprite() {
 		e.Agro = 2
 		e.Hp = 3
 		e.Dextery = 1
+		e.Strength = 1
 	case 1:
 		e.Sprite = 'z'
 		e.ColorSprite = tcell.ColorGreen
 		e.Agro = 2
 		e.Hp = 3
-		e.Dextery = 10
+		e.Dextery = 1
+		e.Name = "Зоиби"
+		e.Strength = 5
 	case 2:
 		e.Sprite = 's'
 		e.ColorSprite = tcell.ColorBlue
 		e.Agro = 2
 		e.Hp = 3
-		e.Dextery = 1
+		e.Dextery = 7
+		e.Name = "Змея"
+		e.Strength = 1
 	case 3:
 		e.Sprite = 'v'
 		e.ColorSprite = tcell.ColorYellow
 		e.Agro = 2
 		e.Hp = 3
 		e.Dextery = 1
+		e.Strength = 1
 	default:
 		e.Sprite = 'x'
 		e.ColorSprite = tcell.ColorWhite
 		e.Agro = 2
 		e.Hp = 3
 		e.Dextery = 1
+		e.Strength = 1
 	}
 }
 
@@ -190,6 +199,8 @@ func (e *Enemy) CheckFight(p *Player) bool {
 	}
 	//smash
 	if e.IsTakeSmash {
+		s.answerHit(e)
+		e.IsTakeSmash = false
 	}
 	//smashPLayer()
 	//dea
@@ -280,14 +291,18 @@ func (e *Enemy) moveToPlayer(p *Player) {
 }
 
 func (e *Enemy) checkRuneX(v int, p *Player) bool {
-	if s.Mapp[e.X+v][e.Y] != '.' || (e.X+v == p.X && e.Y == p.Y) {
+	if e.X+v == p.X && e.Y == p.Y {
+		return false
+	} else if s.Mapp[e.X+v][e.Y] != '+' && s.Mapp[e.X+v][e.Y] != '#' && s.Mapp[e.X+v][e.Y] != '.' {
 		return false
 	} else {
 		return true
 	}
 }
 func (e *Enemy) checkRuneY(v int, p *Player) bool {
-	if s.Mapp[e.X][e.Y+v] != '.' || (e.X == p.X && e.Y+v == p.Y) {
+	if e.X == p.X && e.Y+v == p.Y {
+		return false
+	} else if s.Mapp[e.X][e.Y+v] != '+' && s.Mapp[e.X][e.Y+v] != '#' && s.Mapp[e.X][e.Y+v] != '.' {
 		return false
 	} else {
 		return true
@@ -322,4 +337,18 @@ type Item struct {
 	DexteryPoint  int
 	StrengthPoint int
 	Cost          int
+}
+
+// weapon
+
+type Weapon struct {
+	Name   string
+	Damage int
+}
+
+func initWeapon() *Weapon {
+	return &Weapon{
+		Name:   "",
+		Damage: 0,
+	}
 }
