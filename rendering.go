@@ -24,13 +24,10 @@ import (
 
 	В игре собирается и отображается в отдельном представлении статистика всех прохождений, отсортированная по количеству набранных сокровищ: количество сокровищ, достигнутый уровень, количество побежденных противников, количество съеденной еды, количество выпитых эликсиров, количество прочитанных свитков, количество нанесенных и пропущенных ударов, количество пройденных клеток.
 */
-var txt int
-
-type Stat struct {
-	IsRun, IsMainGameRun, IsMenuOpen, IsGameMenuOpen, IsInventoryOpen, IsStartNewGame bool
-}
 
 var s *Session
+var isRun bool
+var GameLvl int
 
 func RunView() {
 	screen, err := tcell.NewScreen()
@@ -42,34 +39,37 @@ func RunView() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//player := s.Player
+	GameLvl = 1
 	s = initNewGame()
-	state := Stat{true, false, true, false, false, false}
-	for state.IsRun {
-		if state.IsStartNewGame {
-			s = initNewGame()
-			state.IsStartNewGame = false
-		}
+	isRun = true
+	for isRun {
 		screen.Clear()
-		if state.IsMenuOpen {
+		switch s.CurrentState {
+		case StateStartNewGame:
+			GameLvl = 20
+			s = initNewGame()
+			s.CurrentState = StatePlay
+		case StateNextLvl:
+			s = initNewGame()
+			s.CurrentState = StatePlay
+
+		}
+
+		switch s.CurrentState {
+		case StateMainMenu:
 			runMenu(screen)
-		} else if state.IsInventoryOpen {
-			//	mapp := s.Mapp
-			//runGame(screen, s)
+		case StateInventory:
 			runIventory(screen)
-		} else if state.IsGameMenuOpen {
+		case StateGameMenu:
 			runGameMenu(screen)
-		} else if state.IsMainGameRun {
+		case StatePlay:
 			runFight()
 			runGame(screen)
-		} else {
-			//openMenu(screen)
 		}
 		screen.Show()
 
 		event := screen.PollEvent()
-		checkInput(screen, &event, &state, s.Player, &s.Mapp)
-		//s.StatusDoing = ""
+		checkInput(&event, s.Player, &s.Mapp)
 	}
 }
 
@@ -78,8 +78,10 @@ func initNewGame() *Session {
 	s := Session{}
 	s.GenMap()
 	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx])
-	s.CurrentLvl = 1
+	s.CurrentLvl = GameLvl
 	s.EnemysListInit()
+	//s.CurrentState = StateMainMenu
+	s.EndRoom = s.EndRoomInit()
 	return &s
 }
 
@@ -94,8 +96,8 @@ func runIventory(screen tcell.Screen) {
 	DrawString(screen, 3, 3, "IVENTORY")
 }
 func runGameMenu(screen tcell.Screen) {
-	DrawString(screen, 3, 3, "m) Continue")
-	DrawString(screen, 3, 4, "e) Save and Exit")
+	DrawString(screen, 3, 3, "1, m) Continue")
+	DrawString(screen, 3, 4, "2) Save and Exit")
 }
 
 func runGame(screen tcell.Screen) {
@@ -117,7 +119,6 @@ func runGame(screen tcell.Screen) {
 		2,
 		fmt.Sprintf("%s", s.EnemyStatusDoing),
 	)
-	txt = 0
 	DrawString(
 		screen,
 		102,
@@ -158,6 +159,7 @@ func runGame(screen tcell.Screen) {
 	for _, e := range s.Enemys {
 		Draw(e.X, e.Y, e.Sprite, screen, &e.ColorSprite)
 	}
+	//	Draw(s.EndRoom.X, s.EndRoom.Y, s.EndRoom.Sprite, screen, &s.EndRoom.ColorSprite)
 }
 
 func runFight() {
@@ -172,15 +174,16 @@ func runFight() {
 }
 
 func openMenu(screen tcell.Screen) {
-	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", txt))
+	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", "!"))
 }
 
-func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Player, mapp *[100][40]rune) {
+func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 	switch event := (*ev).(type) {
 	case *tcell.EventKey:
 		switch event.Rune() {
+		// удалить потом
 		case 'q':
-			state.IsRun = false
+			isRun = false
 		case 'w':
 			if s.checkFightY(-1, player) {
 				if CheckRoof(-1, *mapp, player) {
@@ -206,47 +209,48 @@ func checkInput(screen tcell.Screen, ev *tcell.Event, state *Stat, player *Playe
 				}
 			}
 		case 'i':
-			if !state.IsInventoryOpen {
-				state.IsInventoryOpen = true
-			} else {
-				state.IsInventoryOpen = false
-			}
-		case 'e':
-			if state.IsGameMenuOpen {
-				err := WriteSave("session.json", s)
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-				state.IsGameMenuOpen = false
-				state.IsMenuOpen = true
-				state.IsMainGameRun = false
+			switch s.CurrentState {
+			case StatePlay:
+				s.CurrentState = StateInventory
+			case StateInventory:
+				s.CurrentState = StatePlay
 			}
 		case '1':
-			state.IsMenuOpen = false
-			state.IsStartNewGame = true
-			state.IsMainGameRun = true
+			switch s.CurrentState {
+			case StateGameMenu:
+				s.CurrentState = StatePlay
+			case StateMainMenu:
+				s.CurrentState = StateStartNewGame
+			}
 		case '2':
-			if state.IsMenuOpen {
+			switch s.CurrentState {
+			case StateMainMenu:
 				var err error
 				s, err = ReadSave[*Session]("session.json")
 				if err != nil {
 					fmt.Println(err)
 					return
 				}
-				state.IsMenuOpen = false
-				state.IsMainGameRun = true
+				s.CurrentState = StatePlay
+			case StateGameMenu:
+				err := WriteSave("session.json", s)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				s.CurrentState = StateMainMenu
 			}
 		case '4':
-			state.IsRun = false
+			switch s.CurrentState {
+			case StateMainMenu:
+				isRun = false
+			}
 		case 'm':
-			// новая карта
-			//			screen.Clear()
-			//			s.GenMap()
-			if !state.IsGameMenuOpen {
-				state.IsGameMenuOpen = true
-			} else {
-				state.IsGameMenuOpen = false
+			switch s.CurrentState {
+			case StatePlay:
+				s.CurrentState = StateGameMenu
+			case StateGameMenu:
+				s.CurrentState = StatePlay
 			}
 		}
 	}
@@ -312,6 +316,10 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 		return true
 	case '+':
 		return true
+	case '%':
+		GameLvl = s.CurrentLvl + 1
+		s.CurrentState = StateNextLvl
+		return true
 	default:
 		return false
 	}
@@ -324,6 +332,10 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 	case '#':
 		return true
 	case '+':
+		return true
+	case '%':
+		GameLvl = s.CurrentLvl + 1
+		s.CurrentState = StateNextLvl
 		return true
 	default:
 		return false

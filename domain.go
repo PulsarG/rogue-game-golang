@@ -1,5 +1,11 @@
 package main
 
+import (
+	"math/rand"
+
+	"github.com/gdamore/tcell/v2"
+)
+
 // Игровая сессия;
 type Session struct {
 	CurrentLvl                          int
@@ -9,7 +15,55 @@ type Session struct {
 	StartRoomIdx, EndRoomIdx            int
 	Enemys                              []*Enemy
 	PlayerStatusDoing, EnemyStatusDoing string
+	CurrentState                        GameState
+	EndRoom                             *EndRoom
 	// возможно данные для статистики
+}
+
+type GameState int
+
+const (
+	StateMainMenu GameState = iota
+	StatePlay
+	StateGameMenu
+	StateInventory
+	StateGameOver
+	StateStartNewGame
+	StateNextLvl
+)
+
+type EndRoom struct {
+	X, Y        int
+	Sprite      rune
+	ColorSprite tcell.Color
+}
+
+func (s *Session) EndRoomInit() *EndRoom {
+	e := EndRoom{}
+	for {
+		room := rand.Intn(9)
+		if s.Rooms[room].IsStart {
+			continue
+		} else {
+			nicePoint := false
+			for !nicePoint {
+				x := s.Rooms[room].CenterX + rand.Intn(3)
+				y := s.Rooms[room].CenterY + rand.Intn(3)
+				if s.Mapp[x][y] != '.' {
+					continue
+				} else {
+					e.X = x
+					e.Y = y
+					s.Mapp[e.X][e.Y] = '%'
+					nicePoint = true
+				}
+			}
+			e.Sprite = '%'
+			break
+		}
+	}
+	e.ColorSprite = tcell.ColorGreen
+	return &e
 }
 
 // Уровень;
