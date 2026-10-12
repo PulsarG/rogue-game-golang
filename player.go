@@ -14,12 +14,12 @@ type Player struct {
 	FightWith   *Enemy
 }
 
-func PlayerInit(r *Room) *Player {
+func PlayerInit(r *Room, hp int) *Player {
 	return &Player{
 		X:           r.CenterX,
 		Y:           r.CenterY,
 		Sprite:      '@',
-		CurrentHp:   10,
+		CurrentHp:   hp,
 		MaxHp:       10,
 		Strength:    3,
 		Dextery:     3,

@@ -17,7 +17,20 @@ type Session struct {
 	PlayerStatusDoing, EnemyStatusDoing string
 	CurrentState                        GameState
 	EndRoom                             *EndRoom
-	// возможно данные для статистики
+	Statistic                           *Statistic
+}
+
+type Statistic struct {
+	RunNum,
+	Gold,
+	Lvl,
+	Enemy,
+	Food,
+	Flask,
+	Scroll,
+	Hit,
+	Miss,
+	Cell int
 }
 
 type GameState int

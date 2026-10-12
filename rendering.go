@@ -22,7 +22,6 @@ import (
 
 Статистика
 
-	В игре собирается и отображается в отдельном представлении статистика всех прохождений, отсортированная по количеству набранных сокровищ: количество сокровищ, достигнутый уровень, количество побежденных противников, количество съеденной еды, количество выпитых эликсиров, количество прочитанных свитков, количество нанесенных и пропущенных ударов, количество пройденных клеток.
 */
 
 var s *Session
@@ -40,19 +39,25 @@ func RunView() {
 		log.Fatal(err)
 	}
 	GameLvl = 1
-	s = initNewGame()
+	s = initNewGame(10)
 	isRun = true
 	for isRun {
 		screen.Clear()
 		switch s.CurrentState {
 		case StateStartNewGame:
 			GameLvl = 20
-			s = initNewGame()
+			s = initNewGame(10)
 			s.CurrentState = StatePlay
 		case StateNextLvl:
-			s = initNewGame()
+			s = initNewGame(s.Player.CurrentHp)
 			s.CurrentState = StatePlay
-
+		case StateGameOver:
+			DrawString(
+				screen,
+				10,
+				18,
+				fmt.Sprint("Игрок погиб! Жми 1"),
+			)
 		}
 
 		switch s.CurrentState {
@@ -73,16 +78,21 @@ func RunView() {
 	}
 }
 
-func initNewGame() *Session {
+func initNewGame(hp int) *Session {
 
 	s := Session{}
 	s.GenMap()
-	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx])
+	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx], hp)
 	s.CurrentLvl = GameLvl
 	s.EnemysListInit()
 	//s.CurrentState = StateMainMenu
 	s.EndRoom = s.EndRoomInit()
+	s.Statistic = statisticInit()
 	return &s
+}
+
+func statisticInit() *Statistic {
+	return &Statistic{}
 }
 
 func runMenu(screen tcell.Screen) {
@@ -152,8 +162,20 @@ func runGame(screen tcell.Screen) {
 	DrawString(
 		screen,
 		102,
-		15,
-		fmt.Sprintf(": /n\n %c", s.Mapp[s.Player.X][s.Player.Y+1]),
+		16,
+		fmt.Sprintf("Пройдено:  %d", s.Statistic.Cell),
+	)
+	DrawString(
+		screen,
+		102,
+		17,
+		fmt.Sprintf("Нанесено ударов:  %d", s.Statistic.Hit),
+	)
+	DrawString(
+		screen,
+		102,
+		18,
+		fmt.Sprintf("Получено ударов:  %d", s.Statistic.Miss),
 	)
 	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
 	for _, e := range s.Enemys {
@@ -168,6 +190,7 @@ func runFight() {
 			s.PlayerStatusDoing = fmt.Sprintf("Игрок убил %s", e.Name)
 			s.Enemys[i] = s.Enemys[len(s.Enemys)-1]
 			s.Enemys = s.Enemys[:len(s.Enemys)-1]
+			s.Statistic.Enemy += 1
 			//s.Enemys = append(s.Enemys[:i], s.Enemys[i+1:]...)
 		}
 	}
@@ -188,24 +211,28 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			if s.checkFightY(-1, player) {
 				if CheckRoof(-1, *mapp, player) {
 					player.Y -= 1
+					s.Statistic.Cell += 1
 				}
 			}
 		case 'a':
 			if s.checkFightX(-1, player) {
 				if CheckWall(-1, *mapp, player) {
 					player.X -= 1
+					s.Statistic.Cell += 1
 				}
 			}
 		case 's':
 			if s.checkFightY(1, player) {
 				if CheckRoof(1, *mapp, player) {
 					player.Y += 1
+					s.Statistic.Cell += 1
 				}
 			}
 		case 'd':
 			if s.checkFightX(1, player) {
 				if CheckWall(1, *mapp, player) {
 					player.X += 1
+					s.Statistic.Cell += 1
 				}
 			}
 		case 'i':
@@ -215,12 +242,34 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateInventory:
 				s.CurrentState = StatePlay
 			}
+		case 'h': // weapon
+			switch s.CurrentState {
+			case StatePlay:
+				s.PlayerStatusDoing = "Use weapon"
+			}
+		case 'j': // food
+			switch s.CurrentState {
+			case StatePlay:
+				s.PlayerStatusDoing = "Use food"
+			}
+		case 'k': // flask
+			switch s.CurrentState {
+			case StatePlay:
+				s.PlayerStatusDoing = "Use flask"
+			}
+		case 'e': // scroll
+			switch s.CurrentState {
+			case StatePlay:
+				s.PlayerStatusDoing = "Use scroll"
+			}
 		case '1':
 			switch s.CurrentState {
 			case StateGameMenu:
 				s.CurrentState = StatePlay
 			case StateMainMenu:
 				s.CurrentState = StateStartNewGame
+			case StateGameOver:
+				s.CurrentState = StateMainMenu
 			}
 		case '2':
 			switch s.CurrentState {
@@ -228,8 +277,8 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				var err error
 				s, err = ReadSave[*Session]("session.json")
 				if err != nil {
-					fmt.Println(err)
-					return
+					fmt.Println(err, "12123123")
+					//return
 				}
 				s.CurrentState = StatePlay
 			case StateGameMenu:
@@ -286,6 +335,7 @@ func (s *Session) giveHit(e *Enemy) {
 	} else {
 		damage := rand.Intn(s.Player.Strength+s.Player.Weapon.Damage) + 1
 		e.Hp -= damage
+		s.Statistic.Hit += 1
 		s.PlayerStatusDoing = fmt.Sprintf("Игрок нанес %d урона", damage)
 	}
 	e.IsTakeSmash = true
@@ -298,6 +348,11 @@ func (s *Session) answerHit(e *Enemy) {
 	} else {
 		damage := rand.Intn(e.Strength) + 1
 		s.Player.CurrentHp -= damage
+		if s.Player.CurrentHp <= 0 {
+			s.CurrentState = StateGameOver
+			return
+		}
+		s.Statistic.Miss += 1
 		s.EnemyStatusDoing = fmt.Sprintf("Враг нанес %d урона", damage)
 	}
 }

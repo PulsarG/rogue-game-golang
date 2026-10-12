@@ -60,7 +60,7 @@ func (s *Session) GenMap() {
 	s.Mapp = mapp
 	s.connectRoom()
 	s.Player = p
-	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx])
+	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx], 10)
 }
 
 func setStartEndRoom(s *Session) {
