@@ -163,3 +163,23 @@ func (s *Session) applyVerTunel(a, b int) {
 		}
 	}
 }
+
+func (s *Session) GoldInit() {
+	countGoldOnLvl := rand.Intn(s.CurrentLvl/2 + 1)
+	for i := 0; i < countGoldOnLvl; i++ {
+		room := rand.Intn(9)
+		nicePoint := false
+		for !nicePoint {
+			xRand := rand.Intn(s.Rooms[room].Width/2 + 1)
+			yRand := rand.Intn(s.Rooms[room].Heigth/2 + 1)
+			x := s.Rooms[room].CenterX + xRand
+			y := s.Rooms[room].CenterY + yRand
+			if s.Mapp[x][y] != '.' {
+				continue
+			} else {
+				s.Mapp[x][y] = 'G'
+				nicePoint = true
+			}
+		}
+	}
+}

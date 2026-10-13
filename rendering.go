@@ -47,7 +47,6 @@ func RunView() {
 		case StateStartNewGame:
 			GameLvl = 20
 			s = initNewGame(10)
-			s.Statistic.RunNum = s.readNumRun()
 			s.CurrentState = StatePlay
 		case StateNextLvl:
 			s = initNewGame(s.Player.CurrentHp)
@@ -57,7 +56,7 @@ func RunView() {
 				screen,
 				10,
 				18,
-				fmt.Sprint("Игрок погиб! Жми 1"),
+				"Игрок погиб! Жми 1",
 			)
 		}
 
@@ -90,12 +89,15 @@ func initNewGame(hp int) *Session {
 	s.EnemysListInit()
 	//s.CurrentState = StateMainMenu
 	s.EndRoom = s.EndRoomInit()
+	s.GoldInit()
 	s.Statistic = statisticInit()
 	return &s
 }
 
 func statisticInit() *Statistic {
-	return &Statistic{}
+	return &Statistic{
+		RunNum: s.readNumRun(),
+	}
 }
 
 func runMenu(screen tcell.Screen) {
@@ -109,7 +111,7 @@ func runStatistic(screen tcell.Screen) {
 	st := s.readStatistic()
 	DrawString(screen, 3, 1, "1) В главное меню")
 	for i, v := range st {
-		DrawString(screen, 3, i+2,
+		DrawString(screen, 3, i+3,
 			fmt.Sprint("Сокровища: ", v.Gold, " Run ", v.RunNum, " Lvl ", v.Lvl, " Kill ", v.Hit, " miss ", v.Miss, " Cell ", v.Cell, " Food, Flask, Scroll ", v.Food, v.Flask, v.Scroll))
 	}
 }
@@ -189,6 +191,12 @@ func runGame(screen tcell.Screen) {
 		18,
 		fmt.Sprintf("Получено ударов:  %d", s.Statistic.Miss),
 	)
+	DrawString(
+		screen,
+		102,
+		19,
+		fmt.Sprintf("Сокровища:  %d", s.Statistic.Gold),
+	)
 	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
 	for _, e := range s.Enemys {
 		Draw(e.X, e.Y, e.Sprite, screen, &e.ColorSprite)
@@ -210,121 +218,6 @@ func runFight() {
 
 func openMenu(screen tcell.Screen) {
 	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", "!"))
-}
-
-func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
-	switch event := (*ev).(type) {
-	case *tcell.EventKey:
-		switch event.Rune() {
-		// удалить потом
-		case 'q':
-			isRun = false
-		case 'w':
-			if s.checkFightY(-1, player) {
-				if CheckRoof(-1, *mapp, player) {
-					player.Y -= 1
-					s.Statistic.Cell += 1
-				}
-			}
-		case 'a':
-			if s.checkFightX(-1, player) {
-				if CheckWall(-1, *mapp, player) {
-					player.X -= 1
-					s.Statistic.Cell += 1
-				}
-			}
-		case 's':
-			if s.checkFightY(1, player) {
-				if CheckRoof(1, *mapp, player) {
-					player.Y += 1
-					s.Statistic.Cell += 1
-				}
-			}
-		case 'd':
-			if s.checkFightX(1, player) {
-				if CheckWall(1, *mapp, player) {
-					player.X += 1
-					s.Statistic.Cell += 1
-				}
-			}
-		case 'i':
-			switch s.CurrentState {
-			case StatePlay:
-				s.CurrentState = StateInventory
-			case StateInventory:
-				s.CurrentState = StatePlay
-			}
-		case 'h': // weapon
-			switch s.CurrentState {
-			case StatePlay:
-				s.PlayerStatusDoing = "Use weapon"
-			}
-		case 'j': // food
-			switch s.CurrentState {
-			case StatePlay:
-				s.PlayerStatusDoing = "Use food"
-			}
-		case 'k': // flask
-			switch s.CurrentState {
-			case StatePlay:
-				s.PlayerStatusDoing = "Use flask"
-			}
-		case 'e': // scroll
-			switch s.CurrentState {
-			case StatePlay:
-				s.PlayerStatusDoing = "Use scroll"
-			}
-		case '1':
-			switch s.CurrentState {
-			case StateGameMenu:
-				s.CurrentState = StatePlay
-			case StateMainMenu:
-				s.CurrentState = StateStartNewGame
-			case StateGameOver:
-				s.CurrentState = StateMainMenu
-			case StateStatistic:
-				s.CurrentState = StateMainMenu
-			}
-		case '2':
-			switch s.CurrentState {
-			case StateMainMenu:
-				var err error
-				s, err = ReadSave[*Session]("session.json")
-				if err != nil {
-					fmt.Println(err, "12123123")
-					//return
-				}
-				s.CurrentState = StatePlay
-			case StateGameMenu:
-				err := WriteSave("session.json", s)
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-				s.CurrentState = StateMainMenu
-			}
-		case '3':
-			switch s.CurrentState {
-			case StateMainMenu:
-				s.CurrentState = StateStatistic
-			case StateStatistic:
-				s.CurrentState = StateMainMenu
-			}
-		case '4':
-			switch s.CurrentState {
-			case StateMainMenu:
-				isRun = false
-			}
-		case 'm':
-			switch s.CurrentState {
-			case StatePlay:
-				s.CurrentState = StateGameMenu
-			case StateGameMenu:
-				s.CurrentState = StatePlay
-			}
-		}
-	}
-
 }
 
 func (s *Session) checkFightX(v int, p *Player) bool {
@@ -398,6 +291,10 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 		GameLvl = s.CurrentLvl + 1
 		s.CurrentState = StateNextLvl
 		return true
+	case 'G':
+		s.Statistic.Gold += 1
+		s.Mapp[player.X][player.Y+vector] = '.'
+		return true
 	default:
 		return false
 	}
@@ -414,6 +311,10 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 	case '%':
 		GameLvl = s.CurrentLvl + 1
 		s.CurrentState = StateNextLvl
+		return true
+	case 'G':
+		s.Statistic.Gold += 1
+		s.Mapp[player.X+vector][player.Y] = '.'
 		return true
 	default:
 		return false
