@@ -18,6 +18,7 @@ type Session struct {
 	CurrentState                        GameState
 	EndRoom                             *EndRoom
 	Statistic                           *Statistic
+	Backpack                            *Backpack
 }
 
 type Statistic struct {
@@ -108,7 +109,15 @@ func NewRoom(startX, startY, width, heigth int) *Room {
 
 // Рюкзак;
 type Backpack struct {
-	Items []interface{}
+	Gold    int
+	Food    int
+	Flasks  []Flask
+	Scrolls []Scroll
+	Weapons []Weapon
+}
+
+func InitBackpack() *Backpack {
+	return &Backpack{}
 }
 
 /*
@@ -122,19 +131,44 @@ type Backpack struct {
 	сила (количество единиц повышения, для свитков, эликсиров и оружия),
 	стоимость (для сокровищ). */
 
-type Item struct {
-	ForRating     bool
-	Coordinates   interface{}
-	Type          interface{}
-	SubType       interface{}
-	HealingPoint  int
-	PointForMAxHp int
-	DexteryPoint  int
-	StrengthPoint int
-	Cost          int
+type Flask struct {
+	Name     string
+	NewMaxHp int
+	StrAdd   int
+	DextAdd  int
 }
 
-// weapon
+const (
+	S           string = "Силы"
+	D           string = "Ловкости"
+	H           string = "Здоровья"
+	FL_SCR_NAME string = "Эликсир повышения "
+)
+
+func (s *Session) InitFlask() *Flask {
+	num := rand.Intn(3)
+	var f Flask
+	switch num {
+	case 0:
+		f.NewMaxHp = rand.Intn(3) + 1
+		f.Name = FL_SCR_NAME + H
+	case 1:
+		f.StrAdd = rand.Intn(3) + 1
+		f.Name = FL_SCR_NAME + S
+	case 2:
+		f.DextAdd = rand.Intn(3) + 1
+		f.Name = FL_SCR_NAME + D
+
+	}
+	return &f
+}
+
+type Scroll struct {
+	Name     string
+	NewMaxHp int
+	StrAdd   int
+	DextAdd  int
+}
 
 type Weapon struct {
 	Name   string

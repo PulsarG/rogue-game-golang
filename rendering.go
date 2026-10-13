@@ -43,7 +43,7 @@ func RunView() {
 		screen.Clear()
 		switch s.CurrentState {
 		case StateStartNewGame:
-			GameLvl = 1
+			GameLvl = 20
 			s = initNewGame(NewGameMaxHp)
 			s.CurrentState = StatePlay
 		case StateNextLvl:
@@ -89,6 +89,8 @@ func initNewGame(hp int) *Session {
 	s.EndRoom = s.EndRoomInit()
 	s.GoldInit()
 	s.Statistic = statisticInit()
+	s.Backpack = InitBackpack()
+	s.FlasksInit()
 	return &s
 }
 
@@ -119,7 +121,15 @@ func runStatistic(screen tcell.Screen) {
 }
 
 func runIventory(screen tcell.Screen) {
-	DrawString(screen, 3, 3, "IVENTORY")
+
+	DrawString(screen, 3, 1, "IVENTORY")
+	DrawString(screen, 3, 3, fmt.Sprintf("Сокровища: %d", s.Statistic.Gold))
+	DrawString(screen, 3, 4, fmt.Sprintf("Еда: %d", s.Backpack.Food))
+	if len(s.Backpack.Flasks) > 0 {
+		for i, v := range s.Backpack.Flasks {
+			DrawString(screen, 3, i+6, v.Name)
+		}
+	}
 }
 func runGameMenu(screen tcell.Screen) {
 	DrawString(screen, 3, 3, "1, m) Continue")
@@ -316,6 +326,10 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 		return true
 	case 'G':
 		s.Statistic.Gold += 1
+		s.Mapp[player.X+vector][player.Y] = '.'
+		return true
+	case 'F':
+		s.Backpack.Flasks = append(s.Backpack.Flasks, *s.InitFlask())
 		s.Mapp[player.X+vector][player.Y] = '.'
 		return true
 	default:
