@@ -70,3 +70,11 @@ func (s *Session) readNumRun() int {
 	}
 	return num + 1
 }
+func (s *Session) ClearStatistic() {
+	var st []Statistic
+	err := WriteSave("statistic.json", st)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}

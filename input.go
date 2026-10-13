@@ -96,6 +96,8 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 					return
 				}
 				s.CurrentState = StateMainMenu
+			case StateStatistic:
+				s.ClearStatistic()
 			}
 		case '3':
 			switch s.CurrentState {

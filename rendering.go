@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"sort"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -12,11 +13,6 @@ import (
 	    При нахождении в непосредственной близости с комнатой со стороны коридора туман войны рассеивается только на области прямой видимости (применяется алгоритм Ray Casting и алгоритм Брезенхэма для определения видимой области).
 	Пример реализации рендеринга уровней представлен в папке code-samples.
 
-	    Передвижение при помощи клавиш WASD.
-	    Применение оружия из рюкзака при помощи кнопки h.
-	    Применение еды из рюкзака при помощи кнопки j.
-	    Применение эликсира из рюкзака при помощи кнопки k.
-	    Применение свитка из рюкзака при помощи e.
 	Любое использование чего-либо из рюкзака должно приводить к печати списка предметов этого типа на экран с вопросом игроку, что нужно выбрать (1–9).
 	При выборе оружия также должна иметься возможность убрать оружие из рук, не выбрасывая из инвентаря (соответственно, для оружия выбор будет 0–9).
 
@@ -27,6 +23,7 @@ import (
 var s *Session
 var isRun bool
 var GameLvl int
+var NewGameMaxHp int
 
 func RunView() {
 	screen, err := tcell.NewScreen()
@@ -39,14 +36,15 @@ func RunView() {
 		log.Fatal(err)
 	}
 	GameLvl = 1
+	NewGameMaxHp = 10
 	s = initNewGame(10)
 	isRun = true
 	for isRun {
 		screen.Clear()
 		switch s.CurrentState {
 		case StateStartNewGame:
-			GameLvl = 20
-			s = initNewGame(10)
+			GameLvl = 1
+			s = initNewGame(NewGameMaxHp)
 			s.CurrentState = StatePlay
 		case StateNextLvl:
 			s = initNewGame(s.Player.CurrentHp)
@@ -109,9 +107,13 @@ func runMenu(screen tcell.Screen) {
 
 func runStatistic(screen tcell.Screen) {
 	st := s.readStatistic()
+	sort.Slice(st, func(i, j int) bool {
+		return st[i].Gold > st[j].Gold
+	})
 	DrawString(screen, 3, 1, "1) В главное меню")
+	DrawString(screen, 3, 2, "2) Очистить")
 	for i, v := range st {
-		DrawString(screen, 3, i+3,
+		DrawString(screen, 3, i+4,
 			fmt.Sprint("Сокровища: ", v.Gold, " Run ", v.RunNum, " Lvl ", v.Lvl, " Kill ", v.Hit, " miss ", v.Miss, " Cell ", v.Cell, " Food, Flask, Scroll ", v.Food, v.Flask, v.Scroll))
 	}
 }
