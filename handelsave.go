@@ -35,3 +35,38 @@ func ReadSave[T any](filepath string) (T, error) {
 	}
 	return res, nil
 }
+
+func (s *Session) writeStatistic() {
+	st := s.readStatistic()
+	//var st []Statistic
+	st = append(st, *s.Statistic)
+	err := WriteSave("statistic.json", st)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+func (s *Session) readStatistic() []Statistic {
+	st, err := ReadSave[[]Statistic]("statistic.json")
+	if err != nil {
+		fmt.Println(err)
+		//return
+	}
+	return st
+}
+func (s *Session) writeNumRun() {
+	err := WriteSave("num-run.json", s.Statistic.RunNum)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+func (s *Session) readNumRun() int {
+	num, err := ReadSave[int]("num-run.json")
+	if err != nil {
+		fmt.Println(err)
+		//return
+	}
+	return num + 1
+}

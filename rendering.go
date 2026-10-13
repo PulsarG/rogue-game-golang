@@ -47,6 +47,7 @@ func RunView() {
 		case StateStartNewGame:
 			GameLvl = 20
 			s = initNewGame(10)
+			s.Statistic.RunNum = s.readNumRun()
 			s.CurrentState = StatePlay
 		case StateNextLvl:
 			s = initNewGame(s.Player.CurrentHp)
@@ -70,6 +71,8 @@ func RunView() {
 		case StatePlay:
 			runFight()
 			runGame(screen)
+		case StateStatistic:
+			runStatistic(screen)
 		}
 		screen.Show()
 
@@ -100,6 +103,15 @@ func runMenu(screen tcell.Screen) {
 	DrawString(screen, 3, 4, "2) Continue")
 	DrawString(screen, 3, 5, "3) Leaderboard")
 	DrawString(screen, 3, 7, "4, q) Exit")
+}
+
+func runStatistic(screen tcell.Screen) {
+	st := s.readStatistic()
+	DrawString(screen, 3, 1, "1) В главное меню")
+	for i, v := range st {
+		DrawString(screen, 3, i+2,
+			fmt.Sprint("Сокровища: ", v.Gold, " Run ", v.RunNum, " Lvl ", v.Lvl, " Kill ", v.Hit, " miss ", v.Miss, " Cell ", v.Cell, " Food, Flask, Scroll ", v.Food, v.Flask, v.Scroll))
+	}
 }
 
 func runIventory(screen tcell.Screen) {
@@ -270,6 +282,8 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.CurrentState = StateStartNewGame
 			case StateGameOver:
 				s.CurrentState = StateMainMenu
+			case StateStatistic:
+				s.CurrentState = StateMainMenu
 			}
 		case '2':
 			switch s.CurrentState {
@@ -287,6 +301,13 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 					fmt.Println(err)
 					return
 				}
+				s.CurrentState = StateMainMenu
+			}
+		case '3':
+			switch s.CurrentState {
+			case StateMainMenu:
+				s.CurrentState = StateStatistic
+			case StateStatistic:
 				s.CurrentState = StateMainMenu
 			}
 		case '4':
@@ -349,6 +370,8 @@ func (s *Session) answerHit(e *Enemy) {
 		damage := rand.Intn(e.Strength) + 1
 		s.Player.CurrentHp -= damage
 		if s.Player.CurrentHp <= 0 {
+			s.writeStatistic()
+			s.writeNumRun()
 			s.CurrentState = StateGameOver
 			return
 		}

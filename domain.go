@@ -43,6 +43,7 @@ const (
 	StateGameOver
 	StateStartNewGame
 	StateNextLvl
+	StateStatistic
 )
 
 type EndRoom struct {
