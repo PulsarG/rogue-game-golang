@@ -37,17 +37,17 @@ func RunView() {
 	}
 	GameLvl = 1
 	NewGameMaxHp = 10
-	s = initNewGame(10)
+	s = initNewGame(10, 0)
 	isRun = true
 	for isRun {
 		screen.Clear()
 		switch s.CurrentState {
 		case StateStartNewGame:
 			GameLvl = 20
-			s = initNewGame(NewGameMaxHp)
+			s = initNewGame(NewGameMaxHp, 0)
 			s.CurrentState = StatePlay
 		case StateNextLvl:
-			s = initNewGame(s.Player.CurrentHp)
+			s = initNewGame(s.Player.CurrentHp, 1)
 			s.CurrentState = StatePlay
 		case StateGameOver:
 			DrawString(
@@ -70,6 +70,10 @@ func RunView() {
 			runGame(screen)
 		case StateStatistic:
 			runStatistic(screen)
+		case StateFlaskList:
+			runFlaskList(screen)
+		case StateScrollList:
+			runScrollList(screen)
 		}
 		screen.Show()
 
@@ -78,20 +82,25 @@ func RunView() {
 	}
 }
 
-func initNewGame(hp int) *Session {
+func initNewGame(hp, n int) *Session {
 
-	s := Session{}
-	s.GenMap()
-	s.Player = PlayerInit(&s.Rooms[s.StartRoomIdx], hp)
-	s.CurrentLvl = GameLvl
-	s.EnemysListInit()
+	ns := Session{}
+	ns.GenMap()
+	ns.Player = PlayerInit(&ns.Rooms[ns.StartRoomIdx], hp)
+	ns.CurrentLvl = GameLvl
+	ns.EnemysListInit()
 	//s.CurrentState = StateMainMenu
-	s.EndRoom = s.EndRoomInit()
-	s.GoldInit()
-	s.Statistic = statisticInit()
-	s.Backpack = InitBackpack()
-	s.FlasksInit()
-	return &s
+	ns.EndRoom = ns.EndRoomInit()
+	ns.GoldInit()
+	ns.Statistic = statisticInit()
+	if n == 0 {
+		ns.Backpack = InitBackpack()
+	} else {
+		ns.Backpack = s.Backpack
+	}
+	ns.FlasksInit()
+	ns.ScrollInit()
+	return &ns
 }
 
 func statisticInit() *Statistic {
@@ -128,6 +137,26 @@ func runIventory(screen tcell.Screen) {
 	if len(s.Backpack.Flasks) > 0 {
 		for i, v := range s.Backpack.Flasks {
 			DrawString(screen, 3, i+6, v.Name)
+		}
+	}
+}
+func runFlaskList(screen tcell.Screen) {
+
+	DrawString(screen, 3, 1, "Эликсиры")
+	DrawString(screen, 3, 2, "Выбор пономеру")
+	if len(s.Backpack.Flasks) > 0 {
+		for i, v := range s.Backpack.Flasks {
+			DrawString(screen, 3, i+4, fmt.Sprint(i+1, ") ", v.Name))
+		}
+	}
+}
+func runScrollList(screen tcell.Screen) {
+
+	DrawString(screen, 3, 1, "Свитки")
+	DrawString(screen, 3, 2, "Выбор пономеру")
+	if len(s.Backpack.Scrolls) > 0 {
+		for i, v := range s.Backpack.Scrolls {
+			DrawString(screen, 3, i+4, fmt.Sprint(i+1, ") ", v.Name))
 		}
 	}
 }
@@ -189,25 +218,25 @@ func runGame(screen tcell.Screen) {
 		screen,
 		102,
 		16,
-		fmt.Sprintf("Пройдено:  %d", s.Statistic.Cell),
+		"H - выбор оружия",
 	)
 	DrawString(
 		screen,
 		102,
 		17,
-		fmt.Sprintf("Нанесено ударов:  %d", s.Statistic.Hit),
+		"J - использовать еду",
 	)
 	DrawString(
 		screen,
 		102,
 		18,
-		fmt.Sprintf("Получено ударов:  %d", s.Statistic.Miss),
+		"K - использовать эликсир",
 	)
 	DrawString(
 		screen,
 		102,
 		19,
-		fmt.Sprintf("Сокровища:  %d", s.Statistic.Gold),
+		"E - использовать свиток",
 	)
 	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
 	for _, e := range s.Enemys {
@@ -228,9 +257,9 @@ func runFight() {
 	}
 }
 
-func openMenu(screen tcell.Screen) {
+/*func openMenu(screen tcell.Screen) {
 	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", "!"))
-}
+}*/
 
 func (s *Session) checkFightX(v int, p *Player) bool {
 	for i, e := range s.Enemys {
@@ -307,6 +336,14 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 		s.Statistic.Gold += 1
 		s.Mapp[player.X][player.Y+vector] = '.'
 		return true
+	case 'F':
+		s.Backpack.Flasks = append(s.Backpack.Flasks, *s.InitFlask())
+		s.Mapp[player.X][player.Y+vector] = '.'
+		return true
+	case 'E':
+		s.Backpack.Scrolls = append(s.Backpack.Scrolls, *s.InitScroll())
+		s.Mapp[player.X][player.Y+vector] = '.'
+		return true
 	default:
 		return false
 	}
@@ -330,6 +367,10 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 		return true
 	case 'F':
 		s.Backpack.Flasks = append(s.Backpack.Flasks, *s.InitFlask())
+		s.Mapp[player.X+vector][player.Y] = '.'
+		return true
+	case 'E':
+		s.Backpack.Scrolls = append(s.Backpack.Scrolls, *s.InitScroll())
 		s.Mapp[player.X+vector][player.Y] = '.'
 		return true
 	default:

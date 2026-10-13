@@ -45,6 +45,9 @@ const (
 	StateStartNewGame
 	StateNextLvl
 	StateStatistic
+	StateFlaskList
+	StateScrollList
+	StateWeaponList
 )
 
 type EndRoom struct {
@@ -142,7 +145,7 @@ const (
 	S           string = "Силы"
 	D           string = "Ловкости"
 	H           string = "Здоровья"
-	FL_SCR_NAME string = "Эликсир повышения "
+	FL_SCR_NAME string = "Повышения "
 )
 
 func (s *Session) InitFlask() *Flask {
@@ -162,12 +165,58 @@ func (s *Session) InitFlask() *Flask {
 	}
 	return &f
 }
+func (s *Session) UseFlask(i int) {
+	if len(s.Backpack.Flasks) == 0 {
+		return
+	}
+	s.Player.MaxHp += s.Backpack.Flasks[i].NewMaxHp
+	if s.Backpack.Flasks[i].NewMaxHp > 0 {
+		s.Player.CurrentHp = s.Player.MaxHp
+	}
+	s.Player.Strength += s.Backpack.Flasks[i].StrAdd
+	s.Player.Dextery += s.Backpack.Flasks[i].DextAdd
+
+	s.Backpack.Flasks[i] = s.Backpack.Flasks[len(s.Backpack.Flasks)-1]
+	s.Backpack.Flasks = s.Backpack.Flasks[:len(s.Backpack.Flasks)-1]
+}
 
 type Scroll struct {
 	Name     string
 	NewMaxHp int
 	StrAdd   int
 	DextAdd  int
+}
+
+func (s *Session) InitScroll() *Scroll {
+	num := rand.Intn(3)
+	var f Scroll
+	switch num {
+	case 0:
+		f.NewMaxHp = rand.Intn(3) + 1
+		f.Name = FL_SCR_NAME + H
+	case 1:
+		f.StrAdd = rand.Intn(3) + 1
+		f.Name = FL_SCR_NAME + S
+	case 2:
+		f.DextAdd = rand.Intn(3) + 1
+		f.Name = FL_SCR_NAME + D
+
+	}
+	return &f
+}
+func (s *Session) UseScroll(i int) {
+	if len(s.Backpack.Scrolls) == 0 {
+		return
+	}
+	s.Player.MaxHp += s.Backpack.Scrolls[i].NewMaxHp
+	if s.Backpack.Scrolls[i].NewMaxHp > 0 {
+		s.Player.CurrentHp = s.Player.MaxHp
+	}
+	s.Player.Strength += s.Backpack.Scrolls[i].StrAdd
+	s.Player.Dextery += s.Backpack.Scrolls[i].DextAdd
+
+	s.Backpack.Scrolls[i] = s.Backpack.Scrolls[len(s.Backpack.Scrolls)-1]
+	s.Backpack.Scrolls = s.Backpack.Scrolls[:len(s.Backpack.Scrolls)-1]
 }
 
 type Weapon struct {
