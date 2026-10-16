@@ -70,5 +70,53 @@
   "Hit": 8,
   "Miss": 7,
   "Cell": 133
+ },
+ {
+  "RunNum": 11,
+  "Gold": 3,
+  "Lvl": 0,
+  "Enemy": 3,
+  "Food": 0,
+  "Flask": 0,
+  "Scroll": 0,
+  "Hit": 6,
+  "Miss": 2,
+  "Cell": 90
+ },
+ {
+  "RunNum": 12,
+  "Gold": 5,
+  "Lvl": 0,
+  "Enemy": 1,
+  "Food": 0,
+  "Flask": 0,
+  "Scroll": 0,
+  "Hit": 3,
+  "Miss": 6,
+  "Cell": 104
+ },
+ {
+  "RunNum": 13,
+  "Gold": 3,
+  "Lvl": 0,
+  "Enemy": 0,
+  "Food": 0,
+  "Flask": 0,
+  "Scroll": 0,
+  "Hit": 1,
+  "Miss": 9,
+  "Cell": 45
+ },
+ {
+  "RunNum": 14,
+  "Gold": 2,
+  "Lvl": 0,
+  "Enemy": 5,
+  "Food": 0,
+  "Flask": 0,
+  "Scroll": 0,
+  "Hit": 8,
+  "Miss": 6,
+  "Cell": 91
  }
 ]

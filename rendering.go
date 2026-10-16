@@ -23,7 +23,6 @@ import (
 var s *Session
 var isRun bool
 var GameLvl int
-var NewGameMaxHp int
 
 func RunView() {
 	screen, err := tcell.NewScreen()
@@ -35,19 +34,18 @@ func RunView() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	GameLvl = 1
-	NewGameMaxHp = 10
-	s = initNewGame(10, 0)
+	GameLvl = FIRST_START_GAME_LVL
+	s = initNewGame(NEW_GAME_HP, INIT_NEW_BACKPACK)
 	isRun = true
 	for isRun {
 		screen.Clear()
 		switch s.CurrentState {
 		case StateStartNewGame:
-			GameLvl = 20
-			s = initNewGame(NewGameMaxHp, 0)
+			GameLvl = TEST_GAME_LVL // need 1 new game lvl
+			s = initNewGame(NEW_GAME_HP, INIT_NEW_BACKPACK)
 			s.CurrentState = StatePlay
 		case StateNextLvl:
-			s = initNewGame(s.Player.CurrentHp, 1)
+			s = initNewGame(s.Player.CurrentHp, INIT_SAVE_BACKPACK)
 			s.CurrentState = StatePlay
 		case StateGameOver:
 			DrawString(
@@ -82,7 +80,7 @@ func RunView() {
 	}
 }
 
-func initNewGame(hp, n int) *Session {
+func initNewGame(hp, isNewBackPack int) *Session {
 
 	ns := Session{}
 	ns.GenMap()
@@ -93,7 +91,7 @@ func initNewGame(hp, n int) *Session {
 	ns.EndRoom = ns.EndRoomInit()
 	ns.GoldInit()
 	ns.Statistic = statisticInit()
-	if n == 0 {
+	if isNewBackPack == 0 {
 		ns.Backpack = InitBackpack()
 	} else {
 		ns.Backpack = s.Backpack
