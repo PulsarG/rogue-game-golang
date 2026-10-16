@@ -51,7 +51,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 		case 'h': // weapon
 			switch s.CurrentState {
 			case StatePlay:
-				s.PlayerStatusDoing = "Use weapon"
+				s.CurrentState = StateWeaponList
+			case StateWeaponList:
+				s.CurrentState = StatePlay
 			}
 		case 'j': // food
 			switch s.CurrentState {
@@ -74,6 +76,14 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.CurrentState = StatePlay
 			}
+		case '0':
+			switch s.CurrentState {
+			case StateWeaponList:
+				s.Player.Weapon.Name = ""
+				s.Player.Weapon.Damage = 0
+				s.DropWeapon()
+				s.PlayerStatusDoing = "Оружие сброшено"
+			}
 		case '1':
 			switch s.CurrentState {
 			case StateGameMenu:
@@ -89,6 +99,10 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(0)
+				s.PlayerStatusDoing = "Использован свиток"
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[0]
+				s.UseWeapon(0)
 			}
 		case '2':
 			switch s.CurrentState {
@@ -114,6 +128,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(1)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[1]
+				s.UseWeapon(1)
 			}
 		case '3':
 			switch s.CurrentState {
@@ -126,6 +143,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(2)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[2]
+				s.UseWeapon(2)
 			}
 		case '4':
 			switch s.CurrentState {
@@ -136,6 +156,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(3)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[3]
+				s.UseWeapon(3)
 			}
 		case '5':
 			switch s.CurrentState {
@@ -144,6 +167,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(4)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[4]
+				s.UseWeapon(4)
 			}
 		case '6':
 			switch s.CurrentState {
@@ -152,6 +178,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(5)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[5]
+				s.UseWeapon(5)
 			}
 		case '7':
 			switch s.CurrentState {
@@ -160,6 +189,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(6)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[6]
+				s.UseWeapon(6)
 			}
 		case '8':
 			switch s.CurrentState {
@@ -168,6 +200,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(7)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[7]
+				s.UseWeapon(7)
 			}
 		case '9':
 			switch s.CurrentState {
@@ -176,6 +211,9 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.PlayerStatusDoing = "Использован эликсир"
 			case StateScrollList:
 				s.UseScroll(8)
+			case StateWeaponList:
+				s.Player.Weapon = &s.Backpack.Weapons[8]
+				s.UseWeapon(8)
 			}
 		case 'm':
 			switch s.CurrentState {

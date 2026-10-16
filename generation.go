@@ -202,7 +202,7 @@ func (s *Session) FlasksInit() {
 		}
 	}
 }
-func (s *Session) ScrollInit() {
+func (s *Session) ScrollsInit() {
 	countScrollOnLvl := rand.Intn(s.CurrentLvl/2 + 1)
 	for i := 0; i < countScrollOnLvl; i++ {
 		room := rand.Intn(9)
@@ -216,6 +216,25 @@ func (s *Session) ScrollInit() {
 				continue
 			} else {
 				s.Mapp[x][y] = 'E'
+				nicePoint = true
+			}
+		}
+	}
+}
+func (s *Session) WeaponsInit() {
+	countScrollOnLvl := rand.Intn(s.CurrentLvl/2 + 1)
+	for i := 0; i < countScrollOnLvl; i++ {
+		room := rand.Intn(9)
+		nicePoint := false
+		for !nicePoint {
+			xRand := rand.Intn(s.Rooms[room].Width/2 + 1)
+			yRand := rand.Intn(s.Rooms[room].Heigth/2 + 1)
+			x := s.Rooms[room].CenterX + xRand
+			y := s.Rooms[room].CenterY + yRand
+			if s.Mapp[x][y] != '.' {
+				continue
+			} else {
+				s.Mapp[x][y] = 'W'
 				nicePoint = true
 			}
 		}

@@ -41,7 +41,7 @@ func RunView() {
 		screen.Clear()
 		switch s.CurrentState {
 		case StateStartNewGame:
-			GameLvl = TEST_GAME_LVL // need 1 new game lvl
+			GameLvl = FIRST_START_GAME_LVL // need 1 new game lvl
 			s = initNewGame(NEW_GAME_HP, INIT_NEW_BACKPACK)
 			s.CurrentState = StatePlay
 		case StateNextLvl:
@@ -72,6 +72,8 @@ func RunView() {
 			runFlaskList(screen)
 		case StateScrollList:
 			runScrollList(screen)
+		case StateWeaponList:
+			runWeaponList(screen)
 		}
 		screen.Show()
 
@@ -95,9 +97,11 @@ func initNewGame(hp, isNewBackPack int) *Session {
 		ns.Backpack = InitBackpack()
 	} else {
 		ns.Backpack = s.Backpack
+		ns.Player.Weapon = s.Player.Weapon
 	}
 	ns.FlasksInit()
-	ns.ScrollInit()
+	ns.ScrollsInit()
+	ns.WeaponsInit()
 	return &ns
 }
 
@@ -137,6 +141,16 @@ func runIventory(screen tcell.Screen) {
 			DrawString(screen, 3, i+6, v.Name)
 		}
 	}
+	if len(s.Backpack.Scrolls) > 0 {
+		for i, v := range s.Backpack.Scrolls {
+			DrawString(screen, 3, i+15, v.Name)
+		}
+	}
+	if len(s.Backpack.Weapons) > 0 {
+		for i, v := range s.Backpack.Weapons {
+			DrawString(screen, 3, i+30, v.Name)
+		}
+	}
 }
 func runFlaskList(screen tcell.Screen) {
 
@@ -155,6 +169,17 @@ func runScrollList(screen tcell.Screen) {
 	if len(s.Backpack.Scrolls) > 0 {
 		for i, v := range s.Backpack.Scrolls {
 			DrawString(screen, 3, i+4, fmt.Sprint(i+1, ") ", v.Name))
+		}
+	}
+}
+func runWeaponList(screen tcell.Screen) {
+
+	DrawString(screen, 3, 1, "Оружие")
+	DrawString(screen, 3, 2, "Выбор по номеру")
+	DrawString(screen, 3, 3, "0) Сбросить оружие")
+	if len(s.Backpack.Weapons) > 0 {
+		for i, v := range s.Backpack.Weapons {
+			DrawString(screen, 3, i+5, fmt.Sprint(i+1, ") ", v.Name))
 		}
 	}
 }
@@ -236,6 +261,12 @@ func runGame(screen tcell.Screen) {
 		19,
 		"E - использовать свиток",
 	)
+	DrawString(
+		screen,
+		102,
+		21,
+		fmt.Sprint("Оружие: ", s.Player.Weapon.Name),
+	)
 	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
 	for _, e := range s.Enemys {
 		Draw(e.X, e.Y, e.Sprite, screen, &e.ColorSprite)
@@ -294,6 +325,12 @@ func (s *Session) giveHit(e *Enemy) {
 	e.IsTakeSmash = true
 }
 func (s *Session) answerHit(e *Enemy) {
+	if e.Hp <= 0 {
+		if rand.Intn(2) == 0 {
+			e.Drop(&s.Mapp)
+		}
+		return
+	}
 	ch := rand.Intn(7)
 	if ch+e.Dextery < s.Player.Dextery {
 		s.EnemyStatusDoing = "Враг промахнулся"
@@ -335,11 +372,27 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 		s.Mapp[player.X][player.Y+vector] = '.'
 		return true
 	case 'F':
+		if len(s.Backpack.Flasks) >= 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		}
 		s.Backpack.Flasks = append(s.Backpack.Flasks, *s.InitFlask())
 		s.Mapp[player.X][player.Y+vector] = '.'
 		return true
 	case 'E':
+		if len(s.Backpack.Scrolls) >= 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		}
 		s.Backpack.Scrolls = append(s.Backpack.Scrolls, *s.InitScroll())
+		s.Mapp[player.X][player.Y+vector] = '.'
+		return true
+	case 'W':
+		if len(s.Backpack.Weapons) >= 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		}
+		s.Backpack.Weapons = append(s.Backpack.Weapons, *s.InitOneWeapon())
 		s.Mapp[player.X][player.Y+vector] = '.'
 		return true
 	default:
@@ -364,11 +417,27 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 		s.Mapp[player.X+vector][player.Y] = '.'
 		return true
 	case 'F':
+		if len(s.Backpack.Flasks) >= 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		}
 		s.Backpack.Flasks = append(s.Backpack.Flasks, *s.InitFlask())
 		s.Mapp[player.X+vector][player.Y] = '.'
 		return true
 	case 'E':
+		if len(s.Backpack.Scrolls) >= 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		}
 		s.Backpack.Scrolls = append(s.Backpack.Scrolls, *s.InitScroll())
+		s.Mapp[player.X+vector][player.Y] = '.'
+		return true
+	case 'W':
+		if len(s.Backpack.Weapons) >= 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		}
+		s.Backpack.Weapons = append(s.Backpack.Weapons, *s.InitOneWeapon())
 		s.Mapp[player.X+vector][player.Y] = '.'
 		return true
 	default:

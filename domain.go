@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/gdamore/tcell/v2"
@@ -123,17 +124,6 @@ func InitBackpack() *Backpack {
 	return &Backpack{}
 }
 
-/*
-Предмет:
-
-	тип,
-	подтип,
-	здоровье (количество единиц повышения, для еды),
-	максимальный уровень здоровья (количество единиц повышения, для свитков и эликсиров, вместе с этим повышается и сам уровень здоровья),
-	ловкость (количество единиц повышения, для свитков и эликсиров),
-	сила (количество единиц повышения, для свитков, эликсиров и оружия),
-	стоимость (для сокровищ). */
-
 type Flask struct {
 	Name     string
 	NewMaxHp int
@@ -142,10 +132,13 @@ type Flask struct {
 }
 
 const (
-	S           string = "Силы"
-	D           string = "Ловкости"
-	H           string = "Здоровья"
-	FL_SCR_NAME string = "Повышения "
+	S                  string = "Силы"
+	D                  string = "Ловкости"
+	H                  string = "Здоровья"
+	FL_SCR_NAME        string = "Повышения "
+	WEAPON_AXE_NAME    string = "Топор "
+	WEAPON_SPIROW_NAME string = "Копье "
+	WEAPON_MACE_NAME   string = "Меч "
 )
 
 func (s *Session) InitFlask() *Flask {
@@ -224,9 +217,39 @@ type Weapon struct {
 	Damage int
 }
 
-func initWeapon() *Weapon {
+func InitWeapon() *Weapon {
 	return &Weapon{
 		Name:   "",
 		Damage: 0,
 	}
+}
+func (s *Session) InitOneWeapon() *Weapon {
+	num := rand.Intn(3)
+	var f Weapon
+	switch num {
+	case 0:
+		f.Damage = rand.Intn(3) + 1 + s.CurrentLvl/3
+		f.Name = fmt.Sprint(WEAPON_MACE_NAME, f.Damage, " Силы")
+	case 1:
+		f.Damage = rand.Intn(3) + 1 + s.CurrentLvl/3
+		f.Name = fmt.Sprint(WEAPON_SPIROW_NAME, f.Damage, " Силы")
+	case 2:
+		f.Damage = rand.Intn(3) + 1 + s.CurrentLvl/3
+		f.Name = fmt.Sprint(WEAPON_AXE_NAME, f.Damage, " Силы")
+
+	}
+	return &f
+}
+func (s *Session) DropWeapon() {
+	x := s.Player.X + 1
+	y := s.Player.Y + 1
+	s.Mapp[x][y] = 'W'
+}
+func (s *Session) UseWeapon(i int) {
+	if len(s.Backpack.Weapons) == 0 {
+		return
+	}
+
+	s.Backpack.Weapons[i] = s.Backpack.Weapons[len(s.Backpack.Weapons)-1]
+	s.Backpack.Weapons = s.Backpack.Weapons[:len(s.Backpack.Weapons)-1]
 }

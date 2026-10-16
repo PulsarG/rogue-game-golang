@@ -49,52 +49,52 @@ func (s *Session) enemyOneInit() *Enemy {
 				}
 			}
 			e.Type = rand.Intn(4)
-			e.SelectSprite()
+			e.SelectSprite(s.CurrentLvl)
 			break
 		}
 	}
 	return &e
 }
 
-func (e *Enemy) SelectSprite() {
+func (e *Enemy) SelectSprite(l int) {
 	switch e.Type {
 	case 0:
 		e.Sprite = 'a'
 		e.ColorSprite = tcell.ColorRed
 		e.Agro = 2
-		e.Hp = 3
-		e.Dextery = 1
-		e.Strength = 1
+		e.Hp = 3 + (l+1)*2
+		e.Dextery = 1 + (l+1)*2
+		e.Strength = 1 + (l+1)*2
 	case 1:
 		e.Sprite = 'z'
 		e.ColorSprite = tcell.ColorGreen
 		e.Agro = 2
-		e.Hp = 3
-		e.Dextery = 1
+		e.Hp = 3 + (l+1)*2
+		e.Dextery = 1 + (l+1)*2
 		e.Name = "Зоиби"
-		e.Strength = 5
+		e.Strength = 5 + (l+1)*2
 	case 2:
 		e.Sprite = 's'
 		e.ColorSprite = tcell.ColorBlue
 		e.Agro = 2
-		e.Hp = 3
-		e.Dextery = 7
+		e.Hp = 3 + (l+1)*2
+		e.Dextery = 7 + (l+1)*2
 		e.Name = "Змея"
-		e.Strength = 1
+		e.Strength = 1 + (l+1)*2
 	case 3:
 		e.Sprite = 'v'
 		e.ColorSprite = tcell.ColorYellow
 		e.Agro = 2
-		e.Hp = 3
-		e.Dextery = 1
-		e.Strength = 1
+		e.Hp = 3 + (l+1)*2
+		e.Dextery = 1 + (l+1)*2
+		e.Strength = 1 + (l+1)*2
 	default:
 		e.Sprite = 'x'
 		e.ColorSprite = tcell.ColorWhite
 		e.Agro = 2
-		e.Hp = 3
-		e.Dextery = 1
-		e.Strength = 1
+		e.Hp = 3 + (l+1)*2
+		e.Dextery = 1 + (l+1)*2
+		e.Strength = 1 + (l+1)*2
 	}
 }
 
@@ -214,6 +214,22 @@ func (e *Enemy) checkRuneY(v int, p *Player) bool {
 		return false
 	} else {
 		return true
+	}
+}
+
+func (e *Enemy) Drop(m *[100][40]rune) {
+	x := e.X + 1
+	y := e.Y + 1
+	r := rand.Intn(4)
+	switch r {
+	case 0:
+		m[x][y] = 'W'
+	case 1:
+		m[x][y] = 'E'
+	case 2:
+		m[x][y] = 'F'
+	case 3:
+		m[x][y] = 'J'
 	}
 }
 
