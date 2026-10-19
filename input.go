@@ -18,6 +18,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				if CheckRoof(-1, *mapp, player) {
 					player.Y -= 1
 					s.Statistic.Cell += 1
+					s.PlayerScanFov()
 				}
 			}
 		case 'a':
@@ -25,6 +26,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				if CheckWall(-1, *mapp, player) {
 					player.X -= 1
 					s.Statistic.Cell += 1
+					s.PlayerScanFov()
 				}
 			}
 		case 's':
@@ -32,6 +34,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				if CheckRoof(1, *mapp, player) {
 					player.Y += 1
 					s.Statistic.Cell += 1
+					s.PlayerScanFov()
 				}
 			}
 		case 'd':
@@ -39,6 +42,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				if CheckWall(1, *mapp, player) {
 					player.X += 1
 					s.Statistic.Cell += 1
+					s.PlayerScanFov()
 				}
 			}
 		case 'i':

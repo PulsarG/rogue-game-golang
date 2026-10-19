@@ -370,5 +370,17 @@
   "Hit": 4,
   "Miss": 2,
   "Cell": 124
+ },
+ {
+  "RunNum": 36,
+  "Gold": 0,
+  "Lvl": 0,
+  "Enemy": 0,
+  "Food": 0,
+  "Flask": 0,
+  "Scroll": 0,
+  "Hit": 2,
+  "Miss": 2,
+  "Cell": 26
  }
 ]

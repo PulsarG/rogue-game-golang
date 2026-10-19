@@ -102,6 +102,7 @@ func initNewGame(hp, isNewBackPack int) *Session {
 	ns.FlasksInit()
 	ns.ScrollsInit()
 	ns.WeaponsInit()
+	ns.PlayerScanFov()
 	return &ns
 }
 
@@ -192,7 +193,9 @@ func runGame(screen tcell.Screen) {
 
 	for i := range 100 {
 		for j := range 40 {
-			screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+			if s.StatusMap[i][j] == 1 {
+				screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+			}
 		}
 	}
 	DrawString(

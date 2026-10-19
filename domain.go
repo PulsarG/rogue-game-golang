@@ -11,6 +11,7 @@ import (
 type Session struct {
 	CurrentLvl                          int
 	Mapp                                [100][40]rune
+	StatusMap                           [100][40]int
 	Player                              *Player
 	Rooms                               [9]Room
 	StartRoomIdx, EndRoomIdx            int
@@ -34,6 +35,14 @@ type Statistic struct {
 	Miss,
 	Cell int
 }
+
+type PointStatus int
+
+const (
+	Unvisible int = 0
+	Visible   int = 1
+	Remember  int = 2
+)
 
 type GameState int
 
@@ -108,6 +117,34 @@ func NewRoom(startX, startY, width, heigth int) *Room {
 		Heigth:          heigth,
 		CenterX:         startX + width/2,
 		CenterY:         startY + heigth/2,
+	}
+}
+
+func (s *Session) PlayerScanFov() {
+	startX := s.Player.X - RADIUS_SCAN
+	if startX < 0 {
+		startX = 0
+	}
+
+	endX := s.Player.X + RADIUS_SCAN
+	if endX >= 100 {
+		endX = 99
+	}
+
+	startY := s.Player.Y - RADIUS_SCAN
+	if startY < 0 {
+		startY = 0
+	}
+
+	endY := s.Player.Y + RADIUS_SCAN
+	if endY >= 40 {
+		endY = 39
+	}
+
+	for x := startX; x <= endX; x++ {
+		for y := startY; y <= endY; y++ {
+			s.StatusMap[x][y] = Visible
+		}
 	}
 }
 
