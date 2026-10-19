@@ -20,9 +20,9 @@ func PlayerInit(r *Room, hp int) *Player {
 		Y:           r.CenterY,
 		Sprite:      '@',
 		CurrentHp:   hp,
-		MaxHp:       10,
-		Strength:    5,
-		Dextery:     5,
+		MaxHp:       1500,
+		Strength:    50,
+		Dextery:     50,
 		ColorSprite: tcell.ColorDefault,
 		Weapon:      InitWeapon(),
 	}

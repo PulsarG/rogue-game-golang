@@ -7,17 +7,19 @@ import (
 )
 
 type Enemy struct {
-	X, Y        int
-	Type        int
-	Name        string
-	Sprite      rune
-	ColorSprite tcell.Color
-	Difficulty  int
-	Hp          int
-	Dextery     int
-	Strength    int
-	Agro        int
-	IsTakeSmash bool
+	X, Y           int
+	Type           int
+	Name           string
+	Sprite         rune
+	ColorSprite    tcell.Color
+	Difficulty     int
+	Hp             int
+	Dextery        int
+	Strength       int
+	Agro           int
+	IsTakeSmash    bool
+	IsFirstHit     bool
+	IsSecondHitOgr bool
 }
 
 func (s *Session) EnemysListInit() {
@@ -48,22 +50,23 @@ func (s *Session) enemyOneInit() *Enemy {
 					nicePoint = true
 				}
 			}
-			e.Type = rand.Intn(4)
+			e.Type = rand.Intn(5)
 			e.SelectSprite(s.CurrentLvl)
 			break
 		}
 	}
+	//	s.Mapp[e.X][e.Y] = e.Sprite
 	return &e
 }
 
 func (e *Enemy) SelectSprite(l int) {
 	switch e.Type {
 	case 0:
-		e.Sprite = 'a'
-		e.ColorSprite = tcell.ColorRed
-		e.Agro = 2
-		e.Hp = 3 + (l+1)*2
-		e.Dextery = 1 + (l+1)*2
+		e.Sprite = 'g'
+		e.ColorSprite = tcell.ColorWheat
+		e.Agro = 1
+		e.Hp = 1 + (l+1)*2
+		e.Dextery = 3 + (l+1)*2
 		e.Strength = 1 + (l+1)*2
 	case 1:
 		e.Sprite = 'z'
@@ -72,29 +75,31 @@ func (e *Enemy) SelectSprite(l int) {
 		e.Hp = 3 + (l+1)*2
 		e.Dextery = 1 + (l+1)*2
 		e.Name = "Зоиби"
-		e.Strength = 5 + (l+1)*2
+		e.Strength = 2 + (l+1)*2
 	case 2:
 		e.Sprite = 's'
-		e.ColorSprite = tcell.ColorBlue
-		e.Agro = 2
-		e.Hp = 3 + (l+1)*2
-		e.Dextery = 7 + (l+1)*2
-		e.Name = "Змея"
+		e.ColorSprite = tcell.ColorWhite
+		e.Agro = 3
+		e.Hp = 2 + (l+1)*2
+		e.Dextery = 4 + (l+1)*2
+		e.Name = "Змей-маг"
 		e.Strength = 1 + (l+1)*2
 	case 3:
 		e.Sprite = 'v'
-		e.ColorSprite = tcell.ColorYellow
-		e.Agro = 2
+		e.ColorSprite = tcell.ColorRed
+		e.Name = "Вампир"
+		e.Agro = 3
 		e.Hp = 3 + (l+1)*2
-		e.Dextery = 1 + (l+1)*2
-		e.Strength = 1 + (l+1)*2
+		e.Dextery = 3 + (l+1)*2
+		e.Strength = 2 + (l+1)*2
 	default:
-		e.Sprite = 'x'
-		e.ColorSprite = tcell.ColorWhite
+		e.Sprite = 'O'
+		e.ColorSprite = tcell.ColorYellow
+		e.Name = "Огр"
 		e.Agro = 2
-		e.Hp = 3 + (l+1)*2
+		e.Hp = 4 + (l+1)*2
 		e.Dextery = 1 + (l+1)*2
-		e.Strength = 1 + (l+1)*2
+		e.Strength = 4 + (l+1)*2
 	}
 }
 
@@ -103,6 +108,9 @@ func (e *Enemy) CheckFight(p *Player) bool {
 	// check
 	if e.checkAgro(p) {
 		//	s.StatusDoing = fmt.Sprintf("In agro %c", e.Sprite)
+		if e.Sprite == 'g' {
+			s.IsGhostfight = true
+		}
 		e.moveToPlayer(p)
 	}
 	//smash
@@ -135,33 +143,37 @@ func (e *Enemy) checkAgro(p *Player) bool {
 func (e *Enemy) moveToPlayer(p *Player) {
 	vectorX := p.X - e.X
 	vectorY := p.Y - e.Y
+	step := 1
+	if e.Sprite == 'O' {
+		step = 2
+	}
 	if rand.Intn(2) == 0 {
 		if vectorX != 0 {
 			if vectorX > 0 {
 				if e.checkRuneX(1, p) {
-					e.X += 1
+					e.X += step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X-1][e.Y] = '.'
+					s.Mapp[e.X-step][e.Y] = '.'
 				}
 			} else {
 				if e.checkRuneX(-1, p) {
-					e.X -= 1
+					e.X -= step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X+1][e.Y] = '.'
+					s.Mapp[e.X+step][e.Y] = '.'
 				}
 			}
 		} else if vectorY != 0 {
 			if vectorY > 0 {
 				if e.checkRuneY(1, p) {
-					e.Y += 1
+					e.Y += step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y-1] = '.'
+					s.Mapp[e.X][e.Y-step] = '.'
 				}
 			} else {
 				if e.checkRuneY(-1, p) {
-					e.Y -= 1
+					e.Y -= step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y+1] = '.'
+					s.Mapp[e.X][e.Y+step] = '.'
 				}
 			}
 		}
@@ -169,29 +181,29 @@ func (e *Enemy) moveToPlayer(p *Player) {
 		if vectorY != 0 {
 			if vectorY > 0 {
 				if e.checkRuneY(1, p) {
-					e.Y += 1
+					e.Y += step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y-1] = '.'
+					s.Mapp[e.X][e.Y-step] = '.'
 				}
 			} else {
 				if e.checkRuneY(1, p) {
-					e.Y -= 1
+					e.Y -= step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y+1] = '.'
+					s.Mapp[e.X][e.Y+step] = '.'
 				}
 			}
 		} else if vectorX != 0 {
 			if vectorX > 0 {
 				if e.checkRuneX(1, p) {
-					e.X += 1
+					e.X += step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X-1][e.Y] = '.'
+					s.Mapp[e.X-step][e.Y] = '.'
 				}
 			} else {
 				if e.checkRuneX(1, p) {
-					e.X -= 1
+					e.X -= step
 					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X+1][e.Y] = '.'
+					s.Mapp[e.X+step][e.Y] = '.'
 				}
 			}
 		}
@@ -238,4 +250,34 @@ func abs(v int) int {
 		return -v
 	}
 	return v
+}
+func (s *Session) GhostIdle() {
+	for _, e := range s.Enemys {
+		if e.Sprite == 'g' {
+			for {
+				x := deltaVector()
+				y := deltaVector()
+				if e.X+x >= 100 || e.Y+y >= 40 {
+					continue
+				}
+				if s.Mapp[e.X+x][e.Y+y] == '.' {
+					s.Mapp[e.X][e.Y] = '.'
+					e.X += x
+					e.Y += y
+					break
+				} else {
+					continue
+				}
+			}
+		}
+	}
+}
+
+func deltaVector() int {
+	x := rand.Intn(5)
+	y := rand.Intn(2)
+	if y == 0 {
+		x *= -1
+	}
+	return x
 }

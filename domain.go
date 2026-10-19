@@ -12,6 +12,7 @@ type Session struct {
 	CurrentLvl                          int
 	Mapp                                [100][40]rune
 	StatusMap                           [100][40]int
+	RoomId                              [100][40]int
 	Player                              *Player
 	Rooms                               [9]Room
 	StartRoomIdx, EndRoomIdx            int
@@ -21,6 +22,7 @@ type Session struct {
 	EndRoom                             *EndRoom
 	Statistic                           *Statistic
 	Backpack                            *Backpack
+	IsGhostfight                        bool
 }
 
 type Statistic struct {
@@ -120,7 +122,7 @@ func NewRoom(startX, startY, width, heigth int) *Room {
 	}
 }
 
-func (s *Session) PlayerScanFov() {
+func (s *Session) PlayerScanFov(status int) {
 	startX := s.Player.X - RADIUS_SCAN
 	if startX < 0 {
 		startX = 0
@@ -143,7 +145,7 @@ func (s *Session) PlayerScanFov() {
 
 	for x := startX; x <= endX; x++ {
 		for y := startY; y <= endY; y++ {
-			s.StatusMap[x][y] = Visible
+			s.StatusMap[x][y] = status
 		}
 	}
 }

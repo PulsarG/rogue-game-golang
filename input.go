@@ -10,39 +10,40 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 	switch event := (*ev).(type) {
 	case *tcell.EventKey:
 		switch event.Rune() {
-		// удалить потом
-		case 'q':
-			isRun = false
 		case 'w':
 			if s.checkFightY(-1, player) {
 				if CheckRoof(-1, *mapp, player) {
+					s.PlayerScanFov(Remember)
 					player.Y -= 1
 					s.Statistic.Cell += 1
-					s.PlayerScanFov()
+					s.PlayerScanFov(Visible)
 				}
 			}
 		case 'a':
 			if s.checkFightX(-1, player) {
 				if CheckWall(-1, *mapp, player) {
+					s.PlayerScanFov(Remember)
 					player.X -= 1
 					s.Statistic.Cell += 1
-					s.PlayerScanFov()
+					s.PlayerScanFov(Visible)
 				}
 			}
 		case 's':
 			if s.checkFightY(1, player) {
 				if CheckRoof(1, *mapp, player) {
+					s.PlayerScanFov(Remember)
 					player.Y += 1
 					s.Statistic.Cell += 1
-					s.PlayerScanFov()
+					s.PlayerScanFov(Visible)
 				}
 			}
 		case 'd':
 			if s.checkFightX(1, player) {
 				if CheckWall(1, *mapp, player) {
+					s.PlayerScanFov(Remember)
 					player.X += 1
 					s.Statistic.Cell += 1
-					s.PlayerScanFov()
+					s.PlayerScanFov(Visible)
 				}
 			}
 		case 'i':
@@ -62,7 +63,12 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 		case 'j': // food
 			switch s.CurrentState {
 			case StatePlay:
-				s.PlayerStatusDoing = "Use food"
+				if s.Backpack.Food != 0 {
+					s.Player.CurrentHp += 3
+					s.Backpack.Food--
+					s.PlayerStatusDoing = "Съел еду"
+					s.Statistic.Food++
+				}
 			}
 		case 'k': // flask
 			switch s.CurrentState {
@@ -107,6 +113,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[0]
 				s.UseWeapon(0)
+				s.DropWeapon()
 			}
 		case '2':
 			switch s.CurrentState {
@@ -135,6 +142,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[1]
 				s.UseWeapon(1)
+				s.DropWeapon()
 			}
 		case '3':
 			switch s.CurrentState {
@@ -150,6 +158,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[2]
 				s.UseWeapon(2)
+				s.DropWeapon()
 			}
 		case '4':
 			switch s.CurrentState {
@@ -163,6 +172,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[3]
 				s.UseWeapon(3)
+				s.DropWeapon()
 			}
 		case '5':
 			switch s.CurrentState {
@@ -174,6 +184,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[4]
 				s.UseWeapon(4)
+				s.DropWeapon()
 			}
 		case '6':
 			switch s.CurrentState {
@@ -185,6 +196,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[5]
 				s.UseWeapon(5)
+				s.DropWeapon()
 			}
 		case '7':
 			switch s.CurrentState {
@@ -196,6 +208,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[6]
 				s.UseWeapon(6)
+				s.DropWeapon()
 			}
 		case '8':
 			switch s.CurrentState {
@@ -207,6 +220,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[7]
 				s.UseWeapon(7)
+				s.DropWeapon()
 			}
 		case '9':
 			switch s.CurrentState {
@@ -218,6 +232,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateWeaponList:
 				s.Player.Weapon = &s.Backpack.Weapons[8]
 				s.UseWeapon(8)
+				s.DropWeapon()
 			}
 		case 'm':
 			switch s.CurrentState {

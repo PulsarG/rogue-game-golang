@@ -23,39 +23,39 @@ func (s *Session) GenMap() {
 
 	s.Rooms[0].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[0].StartPointFromY = 1 + rand.Intn(5)  // для каждой комнаты, рандомить
-	s.Rooms[0].CreateRoom()
+	s.Rooms[0].CreateRoom(s, 9)
 
 	s.Rooms[1].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[1].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
-	s.Rooms[1].CreateRoom()
+	s.Rooms[1].CreateRoom(s, 1)
 
 	s.Rooms[2].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[2].StartPointFromY = 1 + rand.Intn(5)   // для каждой комнаты, рандомить
-	s.Rooms[2].CreateRoom()
+	s.Rooms[2].CreateRoom(s, 2)
 
 	s.Rooms[3].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[3].StartPointFromY = 13 + rand.Intn(5) // для каждой комнаты, рандомить
-	s.Rooms[3].CreateRoom()
+	s.Rooms[3].CreateRoom(s, 3)
 
 	s.Rooms[4].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[4].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
-	s.Rooms[4].CreateRoom()
+	s.Rooms[4].CreateRoom(s, 4)
 
 	s.Rooms[5].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[5].StartPointFromY = 13 + rand.Intn(5)  // для каждой комнаты, рандомить
-	s.Rooms[5].CreateRoom()
+	s.Rooms[5].CreateRoom(s, 5)
 
 	s.Rooms[6].StartPointFromX = 2 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[6].StartPointFromY = 26 + rand.Intn(5) // для каждой комнаты, рандомить
-	s.Rooms[6].CreateRoom()
+	s.Rooms[6].CreateRoom(s, 6)
 
 	s.Rooms[7].StartPointFromX = 35 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[7].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
-	s.Rooms[7].CreateRoom()
+	s.Rooms[7].CreateRoom(s, 7)
 
 	s.Rooms[8].StartPointFromX = 68 + rand.Intn(12) // для каждой комнаты, рандомить
 	s.Rooms[8].StartPointFromY = 26 + rand.Intn(5)  // для каждой комнаты, рандомить
-	s.Rooms[8].CreateRoom()
+	s.Rooms[8].CreateRoom(s, 8)
 
 	s.Mapp = mapp
 	s.connectRoom()
@@ -78,9 +78,9 @@ func setStartEndRoom(s *Session) {
 	}
 }
 
-func (r *Room) CreateRoom() {
+func (r *Room) CreateRoom(s *Session, id int) {
 	r.SetSize()
-	r.GenRoom(&mapp)
+	r.GenRoom(&mapp, s, id)
 
 }
 func (r *Room) SetSize() {
@@ -93,18 +93,44 @@ func (r *Room) SetSize() {
 
 func (r *Room) GenRoom(
 	mapp *[100][40]rune,
+	s *Session,
+	id int,
 ) {
+	/*	for i := r.StartPointFromX; i < r.StartPointFromX+r.Width; i++ {
+			s.Mapp[i][r.StartPointFromY] = '-'
+			s.Mapp[i][r.EndPointFromY] = '-'
+			s.RoomId[i][r.StartPointFromY] = id
+			s.RoomId[i][r.EndPointFromY] = id
+		}
+		for i := r.StartPointFromY; i < r.EndPointFromY+1; i++ {
+			s.Mapp[r.StartPointFromX][i] = '|'
+			s.Mapp[r.Width+r.StartPointFromX][i] = '|'
+			s.RoomId[r.StartPointFromX][i] = id
+			s.RoomId[r.Width+r.StartPointFromX][i] = id
+		}
+		for i := r.StartPointFromX + 1; i < r.StartPointFromX+r.Width; i++ {
+			for j := r.StartPointFromY + 1; j < r.EndPointFromY; j++ {
+				s.Mapp[i][j] = '.'
+				s.RoomId[i][j] = id
+			}
+		}*/
+
 	for i := r.StartPointFromX; i < r.StartPointFromX+r.Width; i++ {
 		mapp[i][r.StartPointFromY] = '-'
 		mapp[i][r.EndPointFromY] = '-'
+		s.RoomId[i][r.StartPointFromY] = id
+		s.RoomId[i][r.EndPointFromY] = id
 	}
 	for i := r.StartPointFromY; i < r.EndPointFromY+1; i++ {
 		mapp[r.StartPointFromX][i] = '|'
 		mapp[r.Width+r.StartPointFromX][i] = '|'
+		s.RoomId[r.StartPointFromX][i] = id
+		s.RoomId[r.Width+r.StartPointFromX][i] = id
 	}
 	for i := r.StartPointFromX + 1; i < r.StartPointFromX+r.Width; i++ {
 		for j := r.StartPointFromY + 1; j < r.EndPointFromY; j++ {
 			mapp[i][j] = '.'
+			s.RoomId[i][j] = id
 		}
 	}
 
@@ -235,6 +261,25 @@ func (s *Session) WeaponsInit() {
 				continue
 			} else {
 				s.Mapp[x][y] = 'W'
+				nicePoint = true
+			}
+		}
+	}
+}
+func (s *Session) FoodInit() {
+	countScrollOnLvl := rand.Intn(s.CurrentLvl/2 + 1)
+	for i := 0; i < countScrollOnLvl; i++ {
+		room := rand.Intn(9)
+		nicePoint := false
+		for !nicePoint {
+			xRand := rand.Intn(s.Rooms[room].Width/2 + 1)
+			yRand := rand.Intn(s.Rooms[room].Heigth/2 + 1)
+			x := s.Rooms[room].CenterX + xRand
+			y := s.Rooms[room].CenterY + yRand
+			if s.Mapp[x][y] != '.' {
+				continue
+			} else {
+				s.Mapp[x][y] = 'J'
 				nicePoint = true
 			}
 		}

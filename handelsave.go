@@ -40,7 +40,6 @@ func (s *Session) writeStatistic() {
 	st := s.readStatistic()
 	//var st []Statistic
 	st = append(st, *s.Statistic)
-	fmt.Println(s.Statistic.Gold)
 	err := WriteSave("statistic.json", st)
 	if err != nil {
 		fmt.Println(err)

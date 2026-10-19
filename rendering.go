@@ -41,18 +41,23 @@ func RunView() {
 		screen.Clear()
 		switch s.CurrentState {
 		case StateStartNewGame:
-			GameLvl = FIRST_START_GAME_LVL // need 1 new game lvl
+			//GameLvl = FIRST_START_GAME_LVL
+			GameLvl = TEST_GAME_LVL
 			s = initNewGame(NEW_GAME_HP, INIT_NEW_BACKPACK)
 			s.CurrentState = StatePlay
 		case StateNextLvl:
 			s = initNewGame(s.Player.CurrentHp, INIT_SAVE_BACKPACK)
 			s.CurrentState = StatePlay
 		case StateGameOver:
+			txt := "Игрок погиб! Жми 1"
+			if GameLvl == 22 {
+				txt = "Вы ПОБЕДИЛИ!!! Жми 1"
+			}
 			DrawString(
 				screen,
 				10,
 				18,
-				"Игрок погиб! Жми 1",
+				txt,
 			)
 		}
 
@@ -102,7 +107,8 @@ func initNewGame(hp, isNewBackPack int) *Session {
 	ns.FlasksInit()
 	ns.ScrollsInit()
 	ns.WeaponsInit()
-	ns.PlayerScanFov()
+	ns.FoodInit()
+	ns.PlayerScanFov(Visible)
 	return &ns
 }
 
@@ -193,9 +199,24 @@ func runGame(screen tcell.Screen) {
 
 	for i := range 100 {
 		for j := range 40 {
-			if s.StatusMap[i][j] == 1 {
-				screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
-			}
+			renderMap(screen, i, j)
+			/*		if s.StatusMap[i][j] == Visible {
+						screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+					}
+					if s.Mapp[i][j] == '#' {
+						continue
+					}
+					if s.RoomId[s.Player.X][s.Player.Y] == s.RoomId[i][j] {
+						screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+						if s.Mapp[i][j] == '-' || s.Mapp[i][j] == '|' {
+							s.StatusMap[i][j] = Remember
+						}
+					}
+					if s.StatusMap[i][j] == Remember {
+						if s.Mapp[i][j] == '-' || s.Mapp[i][j] == '|' {
+							screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+						}
+					}*/
 		}
 	}
 	DrawString(
@@ -271,10 +292,34 @@ func runGame(screen tcell.Screen) {
 		fmt.Sprint("Оружие: ", s.Player.Weapon.Name),
 	)
 	Draw(s.Player.X, s.Player.Y, s.Player.Sprite, screen, &s.Player.ColorSprite)
+	if !s.IsGhostfight {
+		s.GhostIdle()
+	}
 	for _, e := range s.Enemys {
-		Draw(e.X, e.Y, e.Sprite, screen, &e.ColorSprite)
+		if s.RoomId[e.X][e.Y] == s.RoomId[s.Player.X][s.Player.Y] {
+			Draw(e.X, e.Y, e.Sprite, screen, &e.ColorSprite)
+		}
 	}
 	//	Draw(s.EndRoom.X, s.EndRoom.Y, s.EndRoom.Sprite, screen, &s.EndRoom.ColorSprite)
+}
+func renderMap(screen tcell.Screen, i, j int) {
+	if s.StatusMap[i][j] == Visible {
+		screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+	}
+	if s.Mapp[i][j] == '#' {
+		return
+	}
+	if s.RoomId[s.Player.X][s.Player.Y] == s.RoomId[i][j] {
+		screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+		if s.Mapp[i][j] == '-' || s.Mapp[i][j] == '|' {
+			s.StatusMap[i][j] = Remember
+		}
+	}
+	if s.StatusMap[i][j] == Remember {
+		if s.Mapp[i][j] == '-' || s.Mapp[i][j] == '|' {
+			screen.SetContent(i, j, s.Mapp[i][j], nil, tcell.StyleDefault)
+		}
+	}
 }
 
 func runFight() {
@@ -316,6 +361,11 @@ func (s *Session) checkFightY(v int, p *Player) bool {
 }
 
 func (s *Session) giveHit(e *Enemy) {
+	if e.Sprite == 'v' && e.IsFirstHit {
+		s.PlayerStatusDoing = "Игрок промахнулся"
+		e.IsFirstHit = true
+		return
+	}
 	if rand.Intn(7)+s.Player.Dextery < e.Dextery {
 		s.PlayerStatusDoing = "Игрок промахнулся"
 		//return
@@ -334,6 +384,10 @@ func (s *Session) answerHit(e *Enemy) {
 		}
 		return
 	}
+	if e.Sprite == 'O' && e.IsSecondHitOgr {
+		e.IsSecondHitOgr = false
+		return
+	}
 	ch := rand.Intn(7)
 	if ch+e.Dextery < s.Player.Dextery {
 		s.EnemyStatusDoing = "Враг промахнулся"
@@ -347,6 +401,10 @@ func (s *Session) answerHit(e *Enemy) {
 			s.CurrentState = StateGameOver
 			return
 		}
+		if e.Sprite == 'v' {
+			s.Player.MaxHp -= 1
+		}
+		e.IsSecondHitOgr = true
 		s.Statistic.Miss += 1
 		s.EnemyStatusDoing = fmt.Sprintf("Враг нанес %d урона", damage)
 	}
@@ -368,6 +426,12 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 		return true
 	case '%':
 		GameLvl = s.CurrentLvl + 1
+		if GameLvl == 22 {
+			s.writeStatistic()
+			s.writeNumRun()
+			s.CurrentState = StateGameOver
+			return true
+		}
 		s.CurrentState = StateNextLvl
 		return true
 	case 'G':
@@ -395,12 +459,20 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 			s.PlayerStatusDoing = "Нельзя больше взять"
 			return false
 		}
-		s.Backpack.Weapons = append(s.Backpack.Weapons, *s.InitOneWeapon())
 		s.Mapp[player.X][player.Y+vector] = '.'
+		s.Backpack.Weapons = append(s.Backpack.Weapons, *s.InitOneWeapon())
+	case 'J':
+		if s.Backpack.Food > 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		}
+		s.Mapp[player.X][player.Y+vector] = '.'
+		s.Backpack.Food++
 		return true
 	default:
 		return false
 	}
+	return false
 }
 
 func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
@@ -413,6 +485,12 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 		return true
 	case '%':
 		GameLvl = s.CurrentLvl + 1
+		if GameLvl == 22 {
+			s.writeStatistic()
+			s.writeNumRun()
+			s.CurrentState = StateGameOver
+			return true
+		}
 		s.CurrentState = StateNextLvl
 		return true
 	case 'G':
@@ -443,6 +521,15 @@ func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
 		s.Backpack.Weapons = append(s.Backpack.Weapons, *s.InitOneWeapon())
 		s.Mapp[player.X+vector][player.Y] = '.'
 		return true
+	case 'J':
+		if s.Backpack.Food > 9 {
+			s.PlayerStatusDoing = "Нельзя больше взять"
+			return false
+		} else {
+			s.Backpack.Food++
+			s.Mapp[player.X+vector][player.Y] = '.'
+			return true
+		}
 	default:
 		return false
 	}
