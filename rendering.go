@@ -3,22 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"sort"
 
 	"github.com/gdamore/tcell/v2"
 )
-
-/*
-	    При нахождении в непосредственной близости с комнатой со стороны коридора туман войны рассеивается только на области прямой видимости (применяется алгоритм Ray Casting и алгоритм Брезенхэма для определения видимой области).
-	Пример реализации рендеринга уровней представлен в папке code-samples.
-
-	Любое использование чего-либо из рюкзака должно приводить к печати списка предметов этого типа на экран с вопросом игроку, что нужно выбрать (1–9).
-	При выборе оружия также должна иметься возможность убрать оружие из рук, не выбрасывая из инвентаря (соответственно, для оружия выбор будет 0–9).
-
-Статистика
-
-*/
 
 var s *Session
 var isRun bool
@@ -84,37 +72,6 @@ func RunView() {
 
 		event := screen.PollEvent()
 		checkInput(&event, s.Player, &s.Mapp)
-	}
-}
-
-func initNewGame(hp, isNewBackPack int) *Session {
-
-	ns := Session{}
-	ns.GenMap()
-	ns.Player = PlayerInit(&ns.Rooms[ns.StartRoomIdx], hp)
-	ns.CurrentLvl = GameLvl
-	ns.EnemysListInit()
-	//s.CurrentState = StateMainMenu
-	ns.EndRoom = ns.EndRoomInit()
-	ns.GoldInit()
-	ns.Statistic = statisticInit()
-	if isNewBackPack == 0 {
-		ns.Backpack = InitBackpack()
-	} else {
-		ns.Backpack = s.Backpack
-		ns.Player.Weapon = s.Player.Weapon
-	}
-	ns.FlasksInit()
-	ns.ScrollsInit()
-	ns.WeaponsInit()
-	ns.FoodInit()
-	ns.PlayerScanFov(Visible)
-	return &ns
-}
-
-func statisticInit() *Statistic {
-	return &Statistic{
-		RunNum: s.readNumRun(),
 	}
 }
 
@@ -322,101 +279,13 @@ func renderMap(screen tcell.Screen, i, j int) {
 	}
 }
 
-func runFight() {
-	for i, e := range s.Enemys {
-		if e.CheckFight(s.Player) {
-			s.PlayerStatusDoing = fmt.Sprintf("Игрок убил %s", e.Name)
-			s.Enemys[i] = s.Enemys[len(s.Enemys)-1]
-			s.Enemys = s.Enemys[:len(s.Enemys)-1]
-			s.Statistic.Enemy += 1
-			//s.Enemys = append(s.Enemys[:i], s.Enemys[i+1:]...)
-		}
-	}
-}
-
-/*func openMenu(screen tcell.Screen) {
-	DrawString(screen, 10, 10, fmt.Sprintf("Inventory: %d", "!"))
-}*/
-
-func (s *Session) checkFightX(v int, p *Player) bool {
-	for i, e := range s.Enemys {
-		if p.X+v == e.X && p.Y == e.Y {
-			s.Player.FightWith = e
-			s.giveHit(s.Enemys[i])
-			e.IsTakeSmash = true
-			return false
-		}
-	}
-	return true
-}
-func (s *Session) checkFightY(v int, p *Player) bool {
-	for i, e := range s.Enemys {
-		if p.X == e.X && p.Y+v == e.Y {
-			s.Player.FightWith = e
-			s.giveHit(s.Enemys[i])
-			return false
-		}
-	}
-	return true
-}
-
-func (s *Session) giveHit(e *Enemy) {
-	if e.Sprite == 'v' && e.IsFirstHit {
-		s.PlayerStatusDoing = "Игрок промахнулся"
-		e.IsFirstHit = true
-		return
-	}
-	if rand.Intn(7)+s.Player.Dextery < e.Dextery {
-		s.PlayerStatusDoing = "Игрок промахнулся"
-		//return
-	} else {
-		damage := rand.Intn(s.Player.Strength+s.Player.Weapon.Damage) + 1
-		e.Hp -= damage
-		s.Statistic.Hit += 1
-		s.PlayerStatusDoing = fmt.Sprintf("Игрок нанес %d урона", damage)
-	}
-	e.IsTakeSmash = true
-}
-func (s *Session) answerHit(e *Enemy) {
-	if e.Hp <= 0 {
-		if rand.Intn(2) == 0 {
-			e.Drop(&s.Mapp)
-		}
-		return
-	}
-	if e.Sprite == 'O' && e.IsSecondHitOgr {
-		e.IsSecondHitOgr = false
-		return
-	}
-	ch := rand.Intn(7)
-	if ch+e.Dextery < s.Player.Dextery {
-		s.EnemyStatusDoing = "Враг промахнулся"
-		//return
-	} else {
-		damage := rand.Intn(e.Strength) + 1
-		s.Player.CurrentHp -= damage
-		if s.Player.CurrentHp <= 0 {
-			s.writeStatistic()
-			s.writeNumRun()
-			s.CurrentState = StateGameOver
-			return
-		}
-		if e.Sprite == 'v' {
-			s.Player.MaxHp -= 1
-		}
-		e.IsSecondHitOgr = true
-		s.Statistic.Miss += 1
-		s.EnemyStatusDoing = fmt.Sprintf("Враг нанес %d урона", damage)
-	}
-}
-
 func DrawString(screen tcell.Screen, x, y int, msg string) {
 	for i, char := range msg {
 		screen.SetContent(x+i, y, char, nil, tcell.StyleDefault)
 	}
 }
 
-func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
+func CheckRoof(vector int, mapp *[100][40]rune, player *Player) bool {
 	switch mapp[player.X][player.Y+vector] {
 	case '.':
 		return true
@@ -461,6 +330,7 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 		}
 		s.Mapp[player.X][player.Y+vector] = '.'
 		s.Backpack.Weapons = append(s.Backpack.Weapons, *s.InitOneWeapon())
+		return true
 	case 'J':
 		if s.Backpack.Food > 9 {
 			s.PlayerStatusDoing = "Нельзя больше взять"
@@ -472,10 +342,9 @@ func CheckRoof(vector int, mapp [100][40]rune, player *Player) bool {
 	default:
 		return false
 	}
-	return false
 }
 
-func CheckWall(vector int, mapp [100][40]rune, player *Player) bool {
+func CheckWall(vector int, mapp *[100][40]rune, player *Player) bool {
 	switch mapp[player.X+vector][player.Y] {
 	case '.':
 		return true

@@ -29,7 +29,7 @@ func GenTunnels() *[9][2]int {
 		var x int
 		if l != 0 {
 			x = v[rand.Intn(l)]
-			deleteDouplicate(&x, &i, tAll)
+			deleteDouplicate(x, i, tAll)
 			res[i][0] = x
 			res[i][1] = i
 		}
@@ -37,14 +37,12 @@ func GenTunnels() *[9][2]int {
 	return &res
 }
 
-func deleteDouplicate(x *int, i *int, tAll *[9][]int) {
+func deleteDouplicate(x, i int, tAll *[9][]int) {
 
-	iRemove := -1
-	for j, w := range tAll[*x] {
-		if w == *i {
-			iRemove = j
-			break
+	for idx, w := range tAll[x] {
+		if w == i {
+			tAll[x] = append(tAll[x][:idx], tAll[x][idx+1:]...)
+			return
 		}
 	}
-	tAll[*x] = append(tAll[*x][:iRemove], tAll[*x][iRemove+1:]...)
 }

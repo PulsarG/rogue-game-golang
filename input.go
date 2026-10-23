@@ -12,7 +12,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 		switch event.Rune() {
 		case 'w':
 			if s.checkFightY(-1, player) {
-				if CheckRoof(-1, *mapp, player) {
+				if CheckRoof(-1, mapp, player) {
 					s.PlayerScanFov(Remember)
 					player.Y -= 1
 					s.Statistic.Cell += 1
@@ -21,7 +21,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			}
 		case 'a':
 			if s.checkFightX(-1, player) {
-				if CheckWall(-1, *mapp, player) {
+				if CheckWall(-1, mapp, player) {
 					s.PlayerScanFov(Remember)
 					player.X -= 1
 					s.Statistic.Cell += 1
@@ -30,7 +30,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			}
 		case 's':
 			if s.checkFightY(1, player) {
-				if CheckRoof(1, *mapp, player) {
+				if CheckRoof(1, mapp, player) {
 					s.PlayerScanFov(Remember)
 					player.Y += 1
 					s.Statistic.Cell += 1
@@ -39,7 +39,7 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			}
 		case 'd':
 			if s.checkFightX(1, player) {
-				if CheckWall(1, *mapp, player) {
+				if CheckWall(1, mapp, player) {
 					s.PlayerScanFov(Remember)
 					player.X += 1
 					s.Statistic.Cell += 1
@@ -111,19 +111,18 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 				s.UseScroll(0)
 				s.PlayerStatusDoing = "Использован свиток"
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[0]
 				s.UseWeapon(0)
 				s.DropWeapon()
 			}
 		case '2':
 			switch s.CurrentState {
 			case StateMainMenu:
-				var err error
-				s, err = ReadSave[*Session]("session.json")
+				loadSession, err := ReadSave[*Session]("session.json")
 				if err != nil {
-					fmt.Println(err, "12123123")
-					//return
+					s.PlayerStatusDoing = "Ошибка загрузки сохранения"
+					break
 				}
+				s = loadSession
 				s.CurrentState = StatePlay
 			case StateGameMenu:
 				err := WriteSave("session.json", s)
@@ -140,7 +139,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(1)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[1]
 				s.UseWeapon(1)
 				s.DropWeapon()
 			}
@@ -156,7 +154,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(2)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[2]
 				s.UseWeapon(2)
 				s.DropWeapon()
 			}
@@ -170,7 +167,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(3)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[3]
 				s.UseWeapon(3)
 				s.DropWeapon()
 			}
@@ -182,7 +178,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(4)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[4]
 				s.UseWeapon(4)
 				s.DropWeapon()
 			}
@@ -194,7 +189,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(5)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[5]
 				s.UseWeapon(5)
 				s.DropWeapon()
 			}
@@ -206,7 +200,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(6)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[6]
 				s.UseWeapon(6)
 				s.DropWeapon()
 			}
@@ -218,7 +211,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(7)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[7]
 				s.UseWeapon(7)
 				s.DropWeapon()
 			}
@@ -230,7 +222,6 @@ func checkInput(ev *tcell.Event, player *Player, mapp *[100][40]rune) {
 			case StateScrollList:
 				s.UseScroll(8)
 			case StateWeaponList:
-				s.Player.Weapon = &s.Backpack.Weapons[8]
 				s.UseWeapon(8)
 				s.DropWeapon()
 			}

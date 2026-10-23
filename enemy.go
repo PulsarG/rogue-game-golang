@@ -111,7 +111,7 @@ func (e *Enemy) CheckFight(p *Player) bool {
 		if e.Sprite == 'g' {
 			s.IsGhostfight = true
 		}
-		e.moveToPlayer(p)
+		e.moveToPlayer(p, &s.Mapp)
 	}
 	//smash
 	if e.IsTakeSmash {
@@ -140,7 +140,7 @@ func (e *Enemy) checkAgro(p *Player) bool {
 	}
 }
 
-func (e *Enemy) moveToPlayer(p *Player) {
+func (e *Enemy) moveToPlayer(p *Player, mapp *[100][40]rune) {
 	vectorX := p.X - e.X
 	vectorY := p.Y - e.Y
 	step := 1
@@ -152,28 +152,28 @@ func (e *Enemy) moveToPlayer(p *Player) {
 			if vectorX > 0 {
 				if e.checkRuneX(1, p) {
 					e.X += step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X-step][e.Y] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X-step][e.Y] = '.'
 				}
 			} else {
 				if e.checkRuneX(-1, p) {
 					e.X -= step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X+step][e.Y] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X+step][e.Y] = '.'
 				}
 			}
 		} else if vectorY != 0 {
 			if vectorY > 0 {
 				if e.checkRuneY(1, p) {
 					e.Y += step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y-step] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X][e.Y-step] = '.'
 				}
 			} else {
 				if e.checkRuneY(-1, p) {
 					e.Y -= step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y+step] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X][e.Y+step] = '.'
 				}
 			}
 		}
@@ -182,28 +182,28 @@ func (e *Enemy) moveToPlayer(p *Player) {
 			if vectorY > 0 {
 				if e.checkRuneY(1, p) {
 					e.Y += step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y-step] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X][e.Y-step] = '.'
 				}
 			} else {
 				if e.checkRuneY(1, p) {
 					e.Y -= step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X][e.Y+step] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X][e.Y+step] = '.'
 				}
 			}
 		} else if vectorX != 0 {
 			if vectorX > 0 {
 				if e.checkRuneX(1, p) {
 					e.X += step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X-step][e.Y] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X-step][e.Y] = '.'
 				}
 			} else {
 				if e.checkRuneX(1, p) {
 					e.X -= step
-					s.Mapp[e.X][e.Y] = e.Sprite
-					s.Mapp[e.X+step][e.Y] = '.'
+					mapp[e.X][e.Y] = e.Sprite
+					mapp[e.X+step][e.Y] = '.'
 				}
 			}
 		}
@@ -254,10 +254,10 @@ func abs(v int) int {
 func (s *Session) GhostIdle() {
 	for _, e := range s.Enemys {
 		if e.Sprite == 'g' {
-			for {
+			for try := 0; try < 10; try++ {
 				x := deltaVector()
 				y := deltaVector()
-				if e.X+x >= 100 || e.Y+y >= 40 {
+				if e.X+x >= 100 || e.Y+y >= 40 || e.X+x < 0 || e.Y+y < 0 {
 					continue
 				}
 				if s.Mapp[e.X+x][e.Y+y] == '.' {

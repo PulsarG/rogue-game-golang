@@ -201,6 +201,9 @@ func (s *Session) UseFlask(i int) {
 	if len(s.Backpack.Flasks) == 0 {
 		return
 	}
+	if i < 0 || i >= len(s.Backpack.Flasks) {
+		return
+	}
 	s.Player.MaxHp += s.Backpack.Flasks[i].NewMaxHp
 	if s.Backpack.Flasks[i].NewMaxHp > 0 {
 		s.Player.CurrentHp = s.Player.MaxHp
@@ -238,6 +241,9 @@ func (s *Session) InitScroll() *Scroll {
 }
 func (s *Session) UseScroll(i int) {
 	if len(s.Backpack.Scrolls) == 0 {
+		return
+	}
+	if i < 0 || i >= len(s.Backpack.Scrolls) {
 		return
 	}
 	s.Player.MaxHp += s.Backpack.Scrolls[i].NewMaxHp
@@ -280,14 +286,27 @@ func (s *Session) InitOneWeapon() *Weapon {
 	return &f
 }
 func (s *Session) DropWeapon() {
-	x := s.Player.X + 1
-	y := s.Player.Y + 1
-	s.Mapp[x][y] = 'W'
+	dirs := [][2]int{{0, 1}, {0, -1}, {1, 0}, {-1, 0}}
+	for _, d := range dirs {
+		nx, ny := s.Player.X+d[0], s.Player.Y+d[1]
+		if nx >= 0 && nx < 100 && ny < 40 && ny >= 0 && s.Mapp[nx][ny] == '.' {
+			s.Mapp[nx][ny] = 'W'
+			return
+		}
+	}
+	//x := s.Player.X + 1
+	//y := s.Player.Y + 1
+	//s.Mapp[x][y] = 'W'
 }
 func (s *Session) UseWeapon(i int) {
 	if len(s.Backpack.Weapons) == 0 {
 		return
 	}
+	if i < 0 || i >= len(s.Backpack.Weapons) {
+		return
+	}
+
+	s.Player.Weapon = &s.Backpack.Weapons[i]
 
 	s.Backpack.Weapons[i] = s.Backpack.Weapons[len(s.Backpack.Weapons)-1]
 	s.Backpack.Weapons = s.Backpack.Weapons[:len(s.Backpack.Weapons)-1]
